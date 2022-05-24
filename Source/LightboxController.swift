@@ -468,8 +468,7 @@ extension LightboxController: HeaderViewDelegate {
   func headerView(_ headerView: HeaderView, didPressCloseButton closeButton: UIButton) {
     closeButton.isEnabled = false
     presented = false
-    //dismissalDelegate?.lightboxControllerWillDismiss(self)
-    dismiss(animated: true, completion: nil)
+    dismissalDelegate?.lightboxControllerWillDismiss(self)
   }
 }
 
