@@ -7,16 +7,6 @@ public class LightboxConfig {
   /// Whether to show status bar while Lightbox is presented
   public static var hideStatusBar = true
 
-  /// Provide a closure to handle selected video
-  public static var handleVideo: (_ from: UIViewController, _ videoURL: URL) -> Void = { from, videoURL in
-    let videoController = AVPlayerViewController()
-    videoController.player = AVPlayer(url: videoURL)
-
-    from.present(videoController, animated: true) {
-      videoController.player?.play()
-    }
-  }
-
   /// How to load image onto SDAnimatedImageView
   public static var loadImage: (SDAnimatedImageView, URL, ((UIImage?) -> Void)?) -> Void = { (imageView, imageURL, completion) in
 

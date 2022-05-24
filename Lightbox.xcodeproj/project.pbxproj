@@ -15,6 +15,7 @@
 		44E6A6652495C0EB00543CF0 /* Lightbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D523B0A91C43AA2A001AD1EC /* Lightbox.framework */; };
 		44E6A6662495C0EB00543CF0 /* Lightbox.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D523B0A91C43AA2A001AD1EC /* Lightbox.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		85CB007027B16C6900A47BB3 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 85CB006F27B16C6900A47BB3 /* SDWebImage */; };
+		9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */; };
 		D22006741DFB4D9700E92898 /* Lightbox.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D22006731DFB4D9700E92898 /* Lightbox.bundle */; };
 		D2258CC4215CD035005A9A1C /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2258CC3215CD035005A9A1C /* Color+Extensions.swift */; };
 		D2D71BBC1D54DA77006AB907 /* AssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D71BBB1D54DA77006AB907 /* AssetManager.swift */; };
@@ -63,6 +64,7 @@
 		44E6A6552495BFAC00543CF0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		44E6A6572495BFAC00543CF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		44E6A65B2495BFD400543CF0 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlayerView.swift; path = Source/Views/PlayerView.swift; sourceTree = "<group>"; };
 		D22006731DFB4D9700E92898 /* Lightbox.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Lightbox.bundle; sourceTree = "<group>"; };
 		D2258CC3215CD035005A9A1C /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
 		D2A58F5D1F7943A30064F14E /* Imaginary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Imaginary.framework; path = Carthage/Build/iOS/Imaginary.framework; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 		D523B09F1C43AA2A001AD1EC = {
 			isa = PBXGroup;
 			children = (
+				9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */,
 				D22006721DFB4D9700E92898 /* Resources */,
 				D523B0B41C43AA8A001AD1EC /* Source */,
 				D523B0AB1C43AA2A001AD1EC /* Lightbox */,
@@ -327,6 +330,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */,
 				D56F15C81E0AB79800F128AF /* LoadingIndicator.swift in Sources */,
 				D54DFCBF1C5AAAD600ADEA0E /* PageView.swift in Sources */,
 				D573A2F71C5B5E55006053DD /* UIView+Gradient.swift in Sources */,
