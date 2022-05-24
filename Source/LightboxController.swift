@@ -195,6 +195,11 @@ open class LightboxController: UIViewController {
         configurePages(initialImages)
         
         goTo(initialPage, animated: false)
+        
+        // Start Play Video for currentPage
+        if let videoUrl = pageViews[currentPage].image.videoURL {
+            pageViews[currentPage].configurePlayer(videoUrl)
+        }
     }
  
     open override func viewDidLayoutSubviews() {
