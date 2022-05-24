@@ -12,6 +12,10 @@ open class LightboxImage {
     var hasVideoContent: Bool {
         return videoURL != nil
     }
+    
+    var hasImageContent: Bool {
+        return (imageURL != nil) || (image != nil)
+    }
 
   // MARK: - Initialization
 

@@ -122,7 +122,7 @@ class PageView: UIScrollView {
             if subviews.contains(imageView) { imageView.removeFromSuperview() }
             addSubview(playerView)
             addObservers()
-        } else if self.image.imageURL != nil, !subviews.contains(imageView) {
+        } else if self.image.hasImageContent, !subviews.contains(imageView) {
             if subviews.contains(playerView) { playerView.removeFromSuperview() }
             if subviews.contains(playButton) { playButton.removeFromSuperview() }
             addSubview(imageView)
@@ -133,9 +133,9 @@ class PageView: UIScrollView {
     }
     
     func updatePlayButton() {
-      if self.image.videoURL != nil && !subviews.contains(playButton) {
+      if self.image.hasVideoContent, !subviews.contains(playButton) {
         addSubview(playButton)
-      } else if self.image.videoURL == nil && subviews.contains(playButton) {
+      } else if self.image.hasImageContent, subviews.contains(playButton) {
         playButton.removeFromSuperview()
       }
     }
