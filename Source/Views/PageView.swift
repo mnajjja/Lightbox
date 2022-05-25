@@ -1,12 +1,10 @@
 import SDWebImage
 import UIKit
-import AVKit
 
 protocol PageViewDelegate: AnyObject {
 
   func pageViewDidZoom(_ pageView: PageView)
   func remoteImageDidLoad(_ image: UIImage?, imageView: SDAnimatedImageView)
-  func pageView(_ pageView: PageView, didTouchPlayButton videoURL: URL)
   func pageViewDidTouch(_ pageView: PageView)
   func playerDidPlayToEndTime(_ pageView: PageView)
 }
@@ -30,43 +28,10 @@ class PageView: UIScrollView {
         
         return playerView
     }()
-    
-    lazy var playButton: UIButton = {
-        let button = UIButton(type: .custom)
-        button.frame.size = CGSize(width: 60, height: 60)
-        var buttonImage = AssetManager.image("lightbox_play")
-        
-        // Note by Elvis Nuñez on Mon 22 Jun 08:06
-        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
-        // under iOS 13 so using SPM can work without problems.
-        if #available(iOS 13.0, *) {
-            if buttonImage == nil {
-                buttonImage = UIImage(systemName: "play.circle.fill")
-            }
-        }
-        
-        button.setBackgroundImage(buttonImage, for: UIControl.State())
-        button.addTarget(self, action: #selector(playButtonTouched(_:)), for: .touchUpInside)
-        button.tintColor = .white
-        
-        button.layer.shadowOffset = CGSize(width: 1, height: 1)
-        button.layer.shadowColor = UIColor.gray.cgColor
-        button.layer.masksToBounds = false
-        button.layer.shadowOpacity = 0.8
-        
-        return button
-    }()
-    
+  
     lazy var loadingIndicator: UIView = LightboxConfig.makeLoadingIndicator()
     
     var image: LightboxImage
-    
-    private var avPlayer : AVPlayer!
-    private var asset: AVAsset!
-    private var playerItem: AVPlayerItem!
-    private var playerItemContext = 0
-    private var playerStatus: AVPlayerItem.Status!
-    private let requiredAssetKeys = ["playable", "hasProtectedContent"]
 
     var contentFrame = CGRect.zero
     weak var pageViewDelegate: PageViewDelegate?
@@ -86,10 +51,6 @@ class PageView: UIScrollView {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    deinit {
-        removeObservers()
     }
 
     // MARK: - Configuration
@@ -121,25 +82,15 @@ class PageView: UIScrollView {
         if self.image.hasVideoContent, !subviews.contains(playerView) {
             if subviews.contains(imageView) { imageView.removeFromSuperview() }
             addSubview(playerView)
-            addObservers()
         } else if self.image.hasImageContent, !subviews.contains(imageView) {
             if subviews.contains(playerView) { playerView.removeFromSuperview() }
-            if subviews.contains(playButton) { playButton.removeFromSuperview() }
             addSubview(imageView)
             fetchImage()
         }
         
         centerMediaViews()
     }
-    
-    func updatePlayButton() {
-      if self.image.hasVideoContent, !subviews.contains(playButton) {
-        addSubview(playButton)
-      } else if self.image.hasImageContent, subviews.contains(playButton) {
-        playButton.removeFromSuperview()
-      }
-    }
-    
+
     // MARK: - Update
     func update(with image: LightboxImage) {
         self.image = image
@@ -203,7 +154,6 @@ class PageView: UIScrollView {
         let center = image.hasVideoContent ? playerView.center : imageView.center
 
         loadingIndicator.center = center
-        playButton.center = center
     }
     
     func configureImageView() {
@@ -253,93 +203,6 @@ class PageView: UIScrollView {
     private func centerMediaViews() {
         if subviews.contains(playerView) { centerView(playerView) }
         if subviews.contains(imageView) { centerView(imageView) }
-    }
-    
-    // MARK: - Observers
-
-    private func addObservers() {
-        NotificationCenter.default.addObserver(self, selector: #selector(pauseVideoForBackgrounding), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(playVideoForForegrounding), name: UIApplication.willEnterForegroundNotification, object: nil)
-    }
-    
-    private func removeObservers() {
-        playerItem?.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.status))
-        NotificationCenter.default.removeObserver(self)
-    }
-
-    @objc
-    private func pauseVideoForBackgrounding() {
-        avPlayer?.pause()
-    }
-    
-    @objc
-    private func playVideoForForegrounding() {
-        avPlayer?.play()
-    }
-    
-    
-    // MARK: - Action
-    
-    @objc func playButtonTouched(_ button: UIButton) {
-        guard let videoUrl = image.videoURL else { return }
-        pageViewDelegate?.pageView(self, didTouchPlayButton: videoUrl)
-    }
-    
-    // MARK: - Player
-    
-    func configurePlayer(_ url: URL) {
-        asset = AVAsset(url: url)
-        playerItem = AVPlayerItem(asset: asset,
-                                  automaticallyLoadedAssetKeys: requiredAssetKeys)
-        
-        playerItem?.addObserver(self,
-                                   forKeyPath: #keyPath(AVPlayerItem.status),
-                                   options: [.old, .new],
-                                   context: &playerItemContext)
-            
-        avPlayer = AVPlayer(playerItem: playerItem)
-        
-        avPlayer?.isMuted = false
-        avPlayer?.play()
-        playerView.playerLayer.player = avPlayer
-        loadingIndicator.alpha = 1
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer.currentItem, queue: nil) { [weak self] _ in
-            guard let self = self else { return }
-            self.avPlayer?.seek(to: CMTime.zero)
-            self.pageViewDelegate?.playerDidPlayToEndTime(self)
-        }
-    }
-    
-    
-    func killPlayer() {
-        avPlayer?.pause()
-        avPlayer = nil
-    }
-    
-    override func observeValue(forKeyPath keyPath: String?,
-                               of object: Any?,
-                               change: [NSKeyValueChangeKey : Any]?,
-                               context: UnsafeMutableRawPointer?) {
-
-        // Only handle observations for the playerItemContext
-        guard context == &playerItemContext else {
-            super.observeValue(forKeyPath: keyPath,
-                               of: object,
-                               change: change,
-                               context: context)
-            return
-        }
-
-        if keyPath == #keyPath(AVPlayerItem.status) {
-            let status: AVPlayerItem.Status
-            if let statusNumber = change?[.newKey] as? NSNumber {
-                status = AVPlayerItem.Status(rawValue: statusNumber.intValue)!
-            } else {
-                status = .unknown
-            }
-            playerStatus = status
-            UIView.animate(withDuration: 0.4) { self.loadingIndicator.alpha = 0 }
-        }
     }
 }
 

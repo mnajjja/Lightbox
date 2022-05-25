@@ -1,5 +1,6 @@
 import UIKit
 import SDWebImage
+import AVKit
 
 public protocol LightboxControllerPageDelegate: AnyObject {
 
@@ -64,6 +65,7 @@ open class LightboxController: UIViewController {
     open fileprivate(set) lazy var footerView: FooterView = { [unowned self] in
         let view = FooterView()
         view.delegate = self
+        view.isHidden = true
         
         return view
     }()
@@ -87,9 +89,7 @@ open class LightboxController: UIViewController {
             footerView.updatePage(currentPage + 1, numberOfPages)
             footerView.updateText(pageViews[currentPage].image.text)
             
-            if currentPage == numberOfPages - 1 {
-                seen = true
-            }
+            if currentPage == numberOfPages - 1 { seen = true }
             
             reconfigurePagesForPreload()
             
@@ -101,15 +101,19 @@ open class LightboxController: UIViewController {
                 }
             }
 
-            // Start Play Video for currentPage
-            if let videoUrl = pageViews[currentPage].image.videoURL {
-                guard oldValue != currentPage else { return }
-                pageViews[currentPage].configurePlayer(videoUrl)
+            // Stop Playing Video for Previous
+            if pageViews[oldValue].image.hasVideoContent {
+                killPlayer()
             }
             
-            // Stop Play Video for currentPage
-            if pageViews[oldValue].image.hasVideoContent {
-                pageViews[oldValue].killPlayer()
+            // Start Playing Video for currentPage
+            if let videoUrl = pageViews[currentPage].image.videoURL {
+                guard oldValue != currentPage else { return }
+                configurePlayer(videoUrl)
+            }
+            
+            if oldValue != currentPage {
+                self.footerView.isHidden = true
             }
         }
     }
@@ -158,6 +162,14 @@ open class LightboxController: UIViewController {
     var pageViews = [PageView]()
     var statusBarHidden = false
     
+    
+    private var avPlayer : AVPlayer!
+    private var asset: AVAsset!
+    private var playerItem: AVPlayerItem!
+    private var playerItemContext = 0
+    private var playerStatus: AVPlayerItem.Status!
+    private let requiredAssetKeys = ["playable", "hasProtectedContent"]
+    private var pausedForBackgrounding = false
     fileprivate var initialImages: [LightboxImage]
     fileprivate let initialPage: Int
     
@@ -173,11 +185,18 @@ open class LightboxController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    deinit {
+        removeObservers()
+    }
+
+    
     // MARK: - View lifecycle
     
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        addObservers()
         // 9 July 2020: @3lvis
         // Lightbox hasn't been optimized to be used in presentation styles other than fullscreen.
         modalPresentationStyle = .fullScreen
@@ -198,7 +217,7 @@ open class LightboxController: UIViewController {
         
         // Start Play Video for currentPage
         if let videoUrl = pageViews[currentPage].image.videoURL {
-            pageViews[currentPage].configurePlayer(videoUrl)
+            configurePlayer(videoUrl)
         }
     }
  
@@ -210,7 +229,7 @@ open class LightboxController: UIViewController {
             width: view.bounds.width,
             height: 100
         )
-        
+
         footerView.frame.origin = CGPoint(
             x: 0,
             y: view.bounds.height - footerView.frame.height
@@ -343,12 +362,10 @@ open class LightboxController: UIViewController {
     func toggleControls(pageView: PageView?, visible: Bool, duration: TimeInterval = 0.1, delay: TimeInterval = 0) {
         let alpha: CGFloat = visible ? 1.0 : 0.0
         
-        pageView?.playButton.isHidden = !visible
         
         UIView.animate(withDuration: duration, delay: delay, options: [], animations: {
             self.headerView.alpha = alpha
             self.footerView.alpha = alpha
-            pageView?.playButton.alpha = alpha
         }, completion: nil)
     }
     
@@ -366,6 +383,116 @@ open class LightboxController: UIViewController {
             preloadIndicies = [Int](0..<initialImages.count)
         }
         return preloadIndicies
+    }
+    
+    
+    // MARK: - Observers
+
+    private func addObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(pauseVideoForBackgrounding), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(playVideoForForegrounding), name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+    
+    private func removeObservers() {
+        playerItem?.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.status))
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc
+    private func pauseVideoForBackgrounding() {
+        if avPlayer?.rate != 0 {
+            avPlayer?.pause()
+            pausedForBackgrounding = true
+            footerView.setPlayButtonSelected(true)
+        }
+    }
+    
+    @objc
+    private func playVideoForForegrounding() {
+        if pausedForBackgrounding {
+            avPlayer?.play()
+            pausedForBackgrounding = false
+            footerView.setPlayButtonSelected(false)
+        }
+    }
+    
+    // MARK: - Player
+    
+    func configurePlayer(_ url: URL) {
+        asset = AVAsset(url: url)
+        playerItem = AVPlayerItem(asset: asset,
+                                  automaticallyLoadedAssetKeys: requiredAssetKeys)
+        
+        playerItem?.addObserver(self,
+                                   forKeyPath: #keyPath(AVPlayerItem.status),
+                                   options: [.old, .new],
+                                   context: &playerItemContext)
+            
+        avPlayer = AVPlayer(playerItem: playerItem)
+        
+        avPlayer?.isMuted = false
+        avPlayer?.play()
+        pageViews[currentPage].playerView.playerLayer.player = avPlayer
+        pageViews[currentPage].loadingIndicator.alpha = 1
+        
+        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer.currentItem, queue: nil) { [weak self] _ in
+            self?.avPlayer?.seek(to: CMTime.zero)
+            self?.avPlayer?.play()
+        }
+        
+        avPlayer?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: .main) { [weak self] _ in
+            if self?.avPlayer?.currentItem?.status == .readyToPlay, let time = self?.avPlayer?.currentTime() {
+                let currentTime = CMTimeGetSeconds(time)
+                let timeInSec = Int(currentTime)
+                let timeString = NSString(format: "%02d:%02d", timeInSec/60, timeInSec%60) as String
+                DispatchQueue.main.async {
+                    self?.footerView.playbackSlider.value = Float(currentTime)
+                    self?.footerView.upatetimeLabel(timeString)
+                }
+            }
+        }
+    }
+    
+    
+    func killPlayer() {
+        avPlayer?.pause()
+        avPlayer = nil
+    }
+    
+    open override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?,
+                               context: UnsafeMutableRawPointer?) {
+
+        // Only handle observations for the playerItemContext
+        guard context == &playerItemContext else {
+            super.observeValue(forKeyPath: keyPath,
+                               of: object,
+                               change: change,
+                               context: context)
+            return
+        }
+
+        if keyPath == #keyPath(AVPlayerItem.status) {
+            let status: AVPlayerItem.Status
+            if let statusNumber = change?[.newKey] as? NSNumber {
+                status = AVPlayerItem.Status(rawValue: statusNumber.intValue)!
+            } else {
+                status = .unknown
+            }
+            playerStatus = status
+            UIView.animate(withDuration: 0.4) {
+                if status == .readyToPlay, self.pageViews[self.currentPage].image.hasVideoContent {
+                    self.pageViews[self.currentPage].loadingIndicator.alpha = 0
+                    let duration : CMTime = self.playerItem.asset.duration
+                    let seconds : Float64 = CMTimeGetSeconds(duration)
+                    self.footerView.upatePlaybackSlider(Float(seconds))
+                    self.footerView.setPlayButtonSelected(false)
+                    self.footerView.upatetimeLabel("00:00")
+                    self.footerView.isHidden = false
+                }
+            }
+        }
     }
 }
 
@@ -400,15 +527,8 @@ extension LightboxController: UIScrollViewDelegate {
 
 extension LightboxController: PageViewDelegate {
     func playerDidPlayToEndTime(_ pageView: PageView) {
-        pageView.updatePlayButton()
         toggleControls(pageView: pageView, visible: true)
     }
-    
-    func pageView(_ pageView: PageView, didTouchPlayButton videoURL: URL) {
-        pageView.playerView.player?.play()
-        pageView.playButton.removeFromSuperview()
-    }
-    
 
   func remoteImageDidLoad(_ image: UIImage?, imageView: SDAnimatedImageView) {
     guard let image = image, dynamicBackground else {
@@ -437,6 +557,7 @@ extension LightboxController: PageViewDelegate {
     toggleControls(pageView: pageView, visible: !visible)
   }
 }
+
 
 // MARK: - HeaderViewDelegate
 
@@ -481,6 +602,22 @@ extension LightboxController: HeaderViewDelegate {
 // MARK: - FooterViewDelegate
 
 extension LightboxController: FooterViewDelegate {
+    public func playButtonDidTap(_ footerView: FooterView, _ button: UIButton) {
+        if avPlayer?.rate == 0  {
+            avPlayer?.play()
+            button.isSelected = false
+        } else {
+            avPlayer?.pause()
+            button.isSelected = true
+        }
+    }
+    
+    public func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider) {
+        let seconds : Int64 = Int64(playbackSlider.value)
+        let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
+        avPlayer?.seek(to: targetTime)
+    }
+    
 
   public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
     UIView.animate(withDuration: 0.25, animations: {

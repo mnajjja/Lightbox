@@ -23,9 +23,9 @@ open class LightboxImage {
     self.text = text
   }
 
-  public init(image: UIImage? = nil, text: String = "", videoURL: URL? = nil) {
+  public init(image: UIImage? = nil, videoURL: URL? = nil) {
     self.image = image
-    self.text = text
+    self.text = ""
     self.videoURL = videoURL
   }
     
@@ -41,11 +41,6 @@ open class LightboxImage {
     self.videoURL = videoURL
   }
 
-  public init(imageClosure: @escaping () -> UIImage, text: String = "", videoURL: URL? = nil) {
-    self.imageClosure = imageClosure
-    self.text = text
-    self.videoURL = videoURL
-  }
 
   open func addImageTo(_ imageView: SDAnimatedImageView, completion: ((UIImage?) -> Void)? = nil) {
     if let image = image {
