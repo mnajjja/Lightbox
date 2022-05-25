@@ -49,4 +49,23 @@ enum PhotoLibraryManager {
             }
         }
     }
+    
+    static func saveImage(_ image: UIImage, completionHandler: ((Bool, Error?) -> Void)? = nil) {
+        DispatchQueue.global(qos: .background).async {
+            if let imageData = image.pngData() {
+                let galleryPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0];
+                let filePath="\(galleryPath)/\(Date().toString()).png"
+                
+                DispatchQueue.main.async {
+                    try? imageData.write(to: URL(fileURLWithPath: filePath))
+                    PHPhotoLibrary.shared().performChanges({
+                        PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL:
+                                                                                URL(fileURLWithPath: filePath))
+                    }, completionHandler: completionHandler)
+                }
+            } else {
+                completionHandler?(false, nil)
+            }
+        }
+    }
 }

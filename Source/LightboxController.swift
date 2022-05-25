@@ -19,7 +19,7 @@ public protocol LightboxControllerTouchDelegate: AnyObject {
 
 public protocol LightboxSaveDelegate: AnyObject {
 
-  func lightboxControllerSaveMedia(_ controller: LightboxController?, from url: URL, result: (Bool, Error?))
+  func lightboxControllerSaveMedia(_ controller: LightboxController?, from url: URL?, result: (Bool, Error?))
 }
 
 
@@ -627,6 +627,15 @@ extension LightboxController: FooterViewDelegate {
                 DispatchQueue.main.async {
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: imageUrl, result: (success, error))
+                }
+            }
+        } else if let image = images[currentPage].image {
+            
+            saveButton.isUserInteractionEnabled = false
+            PhotoLibraryManager.saveImage(image) { [weak self] success, error in
+                DispatchQueue.main.async {
+                    saveButton.isUserInteractionEnabled = true
+                    self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: nil, result: (success, error))
                 }
             }
         }

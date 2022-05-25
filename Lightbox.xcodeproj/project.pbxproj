@@ -16,6 +16,7 @@
 		44E6A6662495C0EB00543CF0 /* Lightbox.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D523B0A91C43AA2A001AD1EC /* Lightbox.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		85CB007027B16C6900A47BB3 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 85CB006F27B16C6900A47BB3 /* SDWebImage */; };
 		9ACBD905283E3B3700B4D493 /* PhotoLibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */; };
+		9ACBD907283E883700B4D493 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD906283E883700B4D493 /* Date+Extensions.swift */; };
 		9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */; };
 		D22006741DFB4D9700E92898 /* Lightbox.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D22006731DFB4D9700E92898 /* Lightbox.bundle */; };
 		D2258CC4215CD035005A9A1C /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2258CC3215CD035005A9A1C /* Color+Extensions.swift */; };
@@ -66,6 +67,7 @@
 		44E6A6572495BFAC00543CF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		44E6A65B2495BFD400543CF0 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryManager.swift; sourceTree = "<group>"; };
+		9ACBD906283E883700B4D493 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		D22006731DFB4D9700E92898 /* Lightbox.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Lightbox.bundle; sourceTree = "<group>"; };
 		D2258CC3215CD035005A9A1C /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 				D573A2F21C5B5C7B006053DD /* LayoutConfigurable.swift */,
 				D573A2F61C5B5E55006053DD /* UIView+Gradient.swift */,
 				D2258CC3215CD035005A9A1C /* Color+Extensions.swift */,
+				9ACBD906283E883700B4D493 /* Date+Extensions.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -340,6 +343,7 @@
 				D573A2F31C5B5C7B006053DD /* LayoutConfigurable.swift in Sources */,
 				D5026B3C1C5BF3FD003BC1A3 /* LightboxImage.swift in Sources */,
 				D523B0BE1C43AA8B001AD1EC /* LightboxController.swift in Sources */,
+				9ACBD907283E883700B4D493 /* Date+Extensions.swift in Sources */,
 				D54DFCBE1C5AAAD600ADEA0E /* InfoLabel.swift in Sources */,
 				D58A18CB1C5ABF8F000024BB /* FooterView.swift in Sources */,
 				D573A2F01C5B5605006053DD /* HeaderView.swift in Sources */,
