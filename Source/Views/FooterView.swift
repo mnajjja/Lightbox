@@ -5,6 +5,7 @@ public protocol FooterViewDelegate: AnyObject {
     func footerView(_ footerView: FooterView, didExpand expanded: Bool)
     func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider)
     func playButtonDidTap(_ footerView: FooterView, _ button: UIButton)
+    func saveButtonDidTap(_ headerView: FooterView, didPressSaveButton saveButton: UIButton)
 }
 
 open class FooterView: UIView {
@@ -63,6 +64,31 @@ open class FooterView: UIView {
         return button
     }()
     
+    open fileprivate(set) lazy var saveButton: UIButton = { [unowned self] in
+      let title = NSAttributedString(
+        string: LightboxConfig.SaveButton.text,
+        attributes: LightboxConfig.SaveButton.textAttributes)
+
+      let button = UIButton(type: .system)
+
+      button.setAttributedTitle(title, for: .normal)
+
+      if let size = LightboxConfig.SaveButton.size {
+        button.frame.size = size
+      } else {
+        button.sizeToFit()
+      }
+
+      button.addTarget(self, action: #selector(saveButtonDidTap(_:)), for: .touchUpInside)
+
+      if let image = LightboxConfig.DeleteButton.image {
+          button.setBackgroundImage(image, for: UIControl.State())
+      }
+
+      button.isHidden = !LightboxConfig.SaveButton.enabled
+
+      return button
+    }()
     
     open fileprivate(set) lazy var infoLabel: InfoLabel = { [unowned self] in
         let label = InfoLabel(text: "")
@@ -92,6 +118,7 @@ open class FooterView: UIView {
     }()
     
     let gradientColors = [UIColor(hex: "040404").withAlphaComponent(0.1), UIColor(hex: "040404")]
+    private var playerViews = [UIView]()
     open weak var delegate: FooterViewDelegate?
     
     // MARK: - Actions
@@ -104,6 +131,10 @@ open class FooterView: UIView {
         delegate?.playButtonDidTap(self, button)
     }
     
+    @objc func saveButtonDidTap(_ button: UIButton) {
+        delegate?.saveButtonDidTap(self, didPressSaveButton: button)
+    }
+    
     // MARK: - Initializers
     
     public init() {
@@ -112,7 +143,8 @@ open class FooterView: UIView {
         backgroundColor = UIColor.clear
         _ = addGradientLayer(gradientColors)
         
-        [playbackSlider, timeLabel, playButton].forEach { addSubview($0) }
+        [playbackSlider, timeLabel, playButton, saveButton].forEach { addSubview($0) }
+        playerViews = [playbackSlider, timeLabel, playButton]
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -136,6 +168,9 @@ open class FooterView: UIView {
         return image
     }
     
+    func setPlayerViewIsHidden(_ isHidden: Bool) {
+        playerViews.forEach( {$0.isHidden = isHidden} )
+    }
     
     func expand(_ expand: Bool) {
         expand ? infoLabel.expand() : infoLabel.collapse()
@@ -206,6 +241,11 @@ open class FooterView: UIView {
         playButton.frame.origin = CGPoint(
             x: ((frame.width) / 2) - 12,
             y: playbackSlider.frame.maxY + 10
+        )
+        
+        saveButton.frame.origin = CGPoint(
+          x: bounds.width - saveButton.frame.width - 5,
+          y: playbackSlider.frame.maxY + 5
         )
         
         separatorView.frame = CGRect(

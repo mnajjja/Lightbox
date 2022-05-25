@@ -17,6 +17,12 @@ public protocol LightboxControllerTouchDelegate: AnyObject {
   func lightboxController(_ controller: LightboxController, didTouch image: LightboxImage, at index: Int)
 }
 
+public protocol LightboxSaveDelegate: AnyObject {
+
+  func lightboxControllerSaveMedia(_ controller: LightboxController?, from url: URL, result: (Bool, Error?))
+}
+
+
 open class LightboxController: UIViewController {
     
     // MARK: - Internal views
@@ -65,7 +71,7 @@ open class LightboxController: UIViewController {
     open fileprivate(set) lazy var footerView: FooterView = { [unowned self] in
         let view = FooterView()
         view.delegate = self
-        view.isHidden = true
+        view.setPlayerViewIsHidden(true)
         
         return view
     }()
@@ -113,7 +119,7 @@ open class LightboxController: UIViewController {
             }
             
             if oldValue != currentPage {
-                self.footerView.isHidden = true
+                self.footerView.setPlayerViewIsHidden(true)
             }
         }
     }
@@ -155,6 +161,7 @@ open class LightboxController: UIViewController {
     open weak var pageDelegate: LightboxControllerPageDelegate?
     open weak var dismissalDelegate: LightboxControllerDismissalDelegate?
     open weak var imageTouchDelegate: LightboxControllerTouchDelegate?
+    open weak var mediaSaveDelegate: LightboxSaveDelegate?
     open internal(set) var presented = false
     open fileprivate(set) var seen = false
     
@@ -489,7 +496,7 @@ open class LightboxController: UIViewController {
                     self.footerView.upatePlaybackSlider(Float(seconds))
                     self.footerView.setPlayButtonSelected(false)
                     self.footerView.upatetimeLabel("00:00")
-                    self.footerView.isHidden = false
+                    self.footerView.setPlayerViewIsHidden(false)
                 }
             }
         }
@@ -602,6 +609,29 @@ extension LightboxController: HeaderViewDelegate {
 // MARK: - FooterViewDelegate
 
 extension LightboxController: FooterViewDelegate {
+    public func saveButtonDidTap(_ headerView: FooterView, didPressSaveButton saveButton: UIButton) {
+        
+        if let videoUrl = images[currentPage].videoURL {
+            
+            saveButton.isUserInteractionEnabled = false
+            PhotoLibraryManager.saveVideo(from: videoUrl) { [weak self] success, error in
+                DispatchQueue.main.async {
+                    saveButton.isUserInteractionEnabled = true
+                    self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: videoUrl, result: (success, error))
+                }
+            }
+        } else if let imageUrl = images[currentPage].imageURL {
+            
+            saveButton.isUserInteractionEnabled = false
+            PhotoLibraryManager.saveImage(from: imageUrl) { [weak self] success, error in
+                DispatchQueue.main.async {
+                    saveButton.isUserInteractionEnabled = true
+                    self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: imageUrl, result: (success, error))
+                }
+            }
+        }
+    }
+    
     public func playButtonDidTap(_ footerView: FooterView, _ button: UIButton) {
         if avPlayer?.rate == 0  {
             avPlayer?.play()

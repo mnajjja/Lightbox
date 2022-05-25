@@ -75,6 +75,23 @@ public class LightboxConfig {
         ]
     }
     
+    public struct SaveButton {
+        public static var enabled = true
+        public static var size: CGSize?
+        public static var text = NSLocalizedString("Save", comment: "")
+        public static var image: UIImage?
+        
+        public static var textAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: 14),
+            .foregroundColor: UIColor.white,
+            .paragraphStyle: {
+                var style = NSMutableParagraphStyle()
+                style.alignment = .center
+                return style
+            }()
+        ]
+    }
+    
     public struct InfoLabel {
         public static var enabled = true
         public static var textColor = UIColor.white
