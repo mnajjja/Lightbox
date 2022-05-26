@@ -13,21 +13,20 @@ open class HeaderView: UIView {
 
     let button = UIButton(type: .system)
 
-    button.setAttributedTitle(title, for: UIControl.State())
+    button.setAttributedTitle(title, for: .normal)
+    button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 7, bottom: 0, right: 0)
+    button.frame.size = LightboxConfig.CloseButton.size
 
-    if let size = LightboxConfig.CloseButton.size {
-      button.frame.size = size
-    } else {
-      button.sizeToFit()
-    }
 
     button.addTarget(self, action: #selector(closeButtonDidPress(_:)),
       for: .touchUpInside)
 
     if let image = LightboxConfig.CloseButton.image {
-        button.setBackgroundImage(image, for: UIControl.State())
+        let tintedImage = image.withRenderingMode(.alwaysTemplate)
+        button.setImage(tintedImage, for: .normal)
+        button.tintColor = .white
     }
-
+      
     button.isHidden = !LightboxConfig.CloseButton.enabled
 
     return button
@@ -101,12 +100,12 @@ extension HeaderView: LayoutConfigurable {
     }
 
     closeButton.frame.origin = CGPoint(
-      x: bounds.width - closeButton.frame.width - 17,
-      y: topPadding
+      x: 19,
+      y: bounds.height - closeButton.frame.height - 12
     )
 
     deleteButton.frame.origin = CGPoint(
-      x: 17,
+      x: bounds.width - deleteButton.frame.width - 19,
       y: topPadding
     )
   }

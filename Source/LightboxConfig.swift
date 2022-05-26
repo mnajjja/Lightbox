@@ -43,16 +43,16 @@ public class LightboxConfig {
     
     public struct CloseButton {
         public static var enabled = true
-        public static var size: CGSize?
-        public static var text = NSLocalizedString("Close", comment: "")
-        public static var image: UIImage?
+        public static var size = CGSize(width: 50, height: 18)
+        public static var text = NSLocalizedString("Back", comment: "")
+        public static var image = AssetManager.image("back")
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 16),
-            .foregroundColor: UIColor.white,
+            .font: UIFont.boldSystemFont(ofSize: 14),
+            .foregroundColor: UIColor.white.withAlphaComponent(0.7),
             .paragraphStyle: {
                 var style = NSMutableParagraphStyle()
-                style.alignment = .center
+                style.alignment = .left
                 return style
             }()
         ]
@@ -113,5 +113,13 @@ public class LightboxConfig {
     public struct Zoom {
         public static var minimumScale: CGFloat = 1.0
         public static var maximumScale: CGFloat = 3.0
+    }
+    
+    public struct Footer {
+        public static var backgroundColor = UIColor(hex: "26252A")
+    }
+    
+    public struct Header {
+        public static var backgroundColor = UIColor(hex: "26252A").withAlphaComponent(0.7)
     }
 }

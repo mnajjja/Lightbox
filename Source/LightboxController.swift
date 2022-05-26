@@ -63,13 +63,16 @@ open class LightboxController: UIViewController {
     
     open fileprivate(set) lazy var headerView: HeaderView = { [unowned self] in
         let view = HeaderView()
+        view.backgroundColor = LightboxConfig.Header.backgroundColor
         view.delegate = self
+       
         
         return view
     }()
     
     open fileprivate(set) lazy var footerView: FooterView = { [unowned self] in
         let view = FooterView()
+        view.backgroundColor = LightboxConfig.Footer.backgroundColor
         view.delegate = self
         view.setPlayerViewIsHidden(true)
         
@@ -234,7 +237,7 @@ open class LightboxController: UIViewController {
         scrollView.frame = view.bounds
         footerView.frame.size = CGSize(
             width: view.bounds.width,
-            height: 100
+            height: 118
         )
 
         footerView.frame.origin = CGPoint(
@@ -244,9 +247,9 @@ open class LightboxController: UIViewController {
         
         headerView.frame = CGRect(
             x: 0,
-            y: 16,
+            y: 0,
             width: view.bounds.width,
-            height: 100
+            height: 85
         )
         
         if !presented {
