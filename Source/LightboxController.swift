@@ -97,7 +97,9 @@ open class LightboxController: UIViewController {
         didSet {
             currentPage = min(numberOfPages - 1, max(0, currentPage))
             footerView.updatePage(currentPage + 1, numberOfPages)
-            footerView.updateText(pageViews[currentPage].image.text)
+            let title = pageViews[currentPage].image.title
+            let description = pageViews[currentPage].image.description
+            footerView.updateText(title: title, description: description)
             
             if currentPage == numberOfPages - 1 { seen = true }
             
@@ -338,7 +340,6 @@ open class LightboxController: UIViewController {
     // MARK: - Actions
     
     @objc func overlayViewDidTap(_ tapGestureRecognizer: UITapGestureRecognizer) {
-        footerView.expand(false)
     }
     
     // MARK: - Layout
@@ -495,6 +496,7 @@ open class LightboxController: UIViewController {
             } else {
                 status = .unknown
             }
+            
             playerStatus = status
             UIView.animate(withDuration: 0.4) {
                 if status == .readyToPlay, self.pageViews[self.currentPage].image.hasVideoContent {
@@ -507,6 +509,7 @@ open class LightboxController: UIViewController {
                     self.footerView.upateRightTimeLabel("00:00")
                     self.footerView.imageContainerView.isHidden = true
                     self.footerView.playerContainerView.isHidden = false
+                    self.footerView.setSkipButtonsHidden(seconds <= 15.0)
                 }
             }
         }
@@ -619,6 +622,27 @@ extension LightboxController: HeaderViewDelegate {
 // MARK: - FooterViewDelegate
 
 extension LightboxController: FooterViewDelegate {
+    public func goBackButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
+        if let currentTime = avPlayer?.currentTime() {
+            let playerCurrentTime = CMTimeGetSeconds(currentTime)
+            var newTime = playerCurrentTime - 5
+            if newTime < 0 { newTime = 0 }
+            let time2: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
+            avPlayer?.seek(to: time2, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        }
+    }
+    
+    public func goForwardButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
+        guard let duration = avPlayer?.currentItem?.duration, let currentTime = avPlayer?.currentTime() else { return }
+        let playerCurrentTime = CMTimeGetSeconds(currentTime)
+        let newTime = playerCurrentTime + 5
+        
+        if newTime < (CMTimeGetSeconds(duration) - 5) {
+            let time2: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
+            avPlayer?.seek(to: time2, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        }
+    }
+    
     public func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
         if let isMuted = avPlayer?.isMuted {
             avPlayer?.isMuted = !isMuted

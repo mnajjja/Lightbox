@@ -7,6 +7,8 @@ public protocol FooterViewDelegate: AnyObject {
     func playButtonDidTap(_ footerView: FooterView, _ button: UIButton)
     func saveButtonDidTap(_ headerView: FooterView, _ button: UIButton)
     func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton)
+    func goBackButtonDidTap(_ headerView: FooterView, _ button: UIButton)
+    func goForwardButtonDidTap(_ headerView: FooterView, _ button: UIButton)
 }
 
 open class FooterView: UIView {
@@ -87,6 +89,46 @@ open class FooterView: UIView {
         return button
     }()
     
+    open fileprivate(set) lazy var goForwardButton: UIButton = { [unowned self] in
+        let button = UIButton(type: .custom)
+        button.frame.size = CGSize(width: 20, height: 20)
+        
+        var goforwardButtonImage = AssetManager.image("gobackward")
+        
+        // Note by Elvis Nuñez on Mon 22 Jun 08:06
+        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
+        // under iOS 13 so using SPM can work without problems.
+        if #available(iOS 13.0, *) {
+            goforwardButtonImage = UIImage(systemName: "goforward.15")
+        }
+        
+        button.setBackgroundImage(goforwardButtonImage, for: UIControl.State())
+        button.addTarget(self, action: #selector(goForwardButtonDidTap(_:)), for: .touchUpInside)
+        button.tintColor = .white
+
+        return button
+    }()
+    
+    open fileprivate(set) lazy var goBackButton: UIButton = { [unowned self] in
+        let button = UIButton(type: .custom)
+        button.frame.size = CGSize(width: 20, height: 20)
+
+        var gobackwardButtonImage = AssetManager.image("gobackward")
+        
+        // Note by Elvis Nuñez on Mon 22 Jun 08:06
+        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
+        // under iOS 13 so using SPM can work without problems.
+        if #available(iOS 13.0, *) {
+            gobackwardButtonImage = UIImage(systemName: "gobackward.15")
+        }
+        
+        button.setBackgroundImage(gobackwardButtonImage, for: UIControl.State())
+        button.addTarget(self, action: #selector(goBackButtonDidTap(_:)), for: .touchUpInside)
+        button.tintColor = .white
+        
+        return button
+    }()
+    
     open fileprivate(set) lazy var muteButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
         button.frame.size = LightboxConfig.MuteButton.size
@@ -136,13 +178,24 @@ open class FooterView: UIView {
       return button
     }()
     
-    open fileprivate(set) lazy var infoLabel: InfoLabel = { [unowned self] in
+    open fileprivate(set) lazy var titleLabel: UILabel = { [unowned self] in
+        let label = InfoLabel(text: "")
+        label.isHidden = !LightboxConfig.TitleLabel.enabled
+        label.textColor = LightboxConfig.TitleLabel.textColor
+        label.numberOfLines = 1
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+
+        return label
+    }()
+    
+    open fileprivate(set) lazy var infoLabel: UILabel = { [unowned self] in
         let label = InfoLabel(text: "")
         label.isHidden = !LightboxConfig.InfoLabel.enabled
-        
         label.textColor = LightboxConfig.InfoLabel.textColor
-        label.isUserInteractionEnabled = true
-        label.delegate = self
+        label.numberOfLines = 1
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 14)
         
         return label
     }()
@@ -176,6 +229,14 @@ open class FooterView: UIView {
         delegate?.playButtonDidTap(self, button)
     }
     
+    @objc func goBackButtonDidTap(_ button: UIButton) {
+        delegate?.goBackButtonDidTap(self, button)
+    }
+    
+    @objc func goForwardButtonDidTap(_ button: UIButton) {
+        delegate?.goForwardButtonDidTap(self, button)
+    }
+    
     @objc func muteButtonTouched(_ button: UIButton) {
         delegate?.muteButtonDidTap(self, button)
     }
@@ -192,7 +253,8 @@ open class FooterView: UIView {
         backgroundColor = UIColor.clear
         _ = addGradientLayer(gradientColors)
         
-        [playbackSlider, leftTimeLabel, rightTimeLabel, playButton, muteButton].forEach { playerContainerView.addSubview($0) }
+        [playbackSlider, leftTimeLabel, rightTimeLabel, playButton, goBackButton, goForwardButton, muteButton].forEach { playerContainerView.addSubview($0) }
+        [titleLabel, infoLabel].forEach { imageContainerView.addSubview($0) }
         [imageContainerView, playerContainerView, saveButton].forEach { addSubview($0) }
     }
     
@@ -217,10 +279,6 @@ open class FooterView: UIView {
         return image
     }
 
-    func expand(_ expand: Bool) {
-        expand ? infoLabel.expand() : infoLabel.collapse()
-    }
-    
     func updatePage(_ page: Int, _ numberOfPages: Int) {
         let text = "\(page)/\(numberOfPages)"
         
@@ -238,6 +296,11 @@ open class FooterView: UIView {
         playbackSlider.value = 0
     }
     
+    func setSkipButtonsHidden(_ isHidden: Bool ) {
+        goForwardButton.isHidden = isHidden
+        goBackButton.isHidden = isHidden
+    }
+    
     func upateLeftTimeLabel(_ text: String?) {
         leftTimeLabel.text = text
     }
@@ -246,14 +309,9 @@ open class FooterView: UIView {
         rightTimeLabel.text = text
     }
     
-    func updateText(_ text: String) {
-        infoLabel.fullText = text
-        
-        if text.isEmpty {
-            _ = removeGradientLayer()
-        } else if !infoLabel.expanded {
-            _ = addGradientLayer(gradientColors)
-        }
+    func updateText(title: String?, description: String?) {
+        titleLabel.text = title
+        infoLabel.text = description
     }
     
     open override func layoutSubviews() {
@@ -290,7 +348,7 @@ open class FooterView: UIView {
         playbackSlider.frame = CGRect(
             x: 15,
             y: 16,
-            width: frame.width - 30,
+            width: playerContainerView.frame.width - 30,
             height: 5
         )
         
@@ -302,24 +360,34 @@ open class FooterView: UIView {
         )
         
         rightTimeLabel.frame = CGRect(
-            x: bounds.width - rightTimeLabel.frame.width - 15,
+            x: playerContainerView.frame.width - rightTimeLabel.frame.width - 15,
             y: playbackSlider.frame.maxY + 8,
             width: 100,
             height: 13
         )
 
         saveButton.frame.origin = CGPoint(
-          x: bounds.width - saveButton.frame.width - 15,
-          y: bounds.height - saveButton.frame.height - 41
+          x: playerContainerView.frame.width - saveButton.frame.width - 15,
+          y: playerContainerView.frame.height - saveButton.frame.height - 41
         )
         
         muteButton.frame.origin = CGPoint(
           x: 15,
           y: saveButton.frame.minY
         )
-        
+                
         playButton.center.x = center.x
         playButton.center.y = saveButton.center.y
+        
+        goForwardButton.frame.origin = CGPoint(
+          x: playButton.frame.maxX + 30,
+          y: playButton.frame.minY
+        )
+        
+        goBackButton.frame.origin = CGPoint(
+          x: playButton.frame.minX - goBackButton.frame.width - 30,
+          y: playButton.frame.minY
+        )
         
         separatorView.frame = CGRect(
             x: 0,
@@ -327,8 +395,17 @@ open class FooterView: UIView {
             width: frame.width,
             height: 0.5
         )
+
+        titleLabel.frame = CGRect(x: 50,
+                                  y: 14,
+                                  width: frame.width - 50 * 2,
+                                  height: 20)
         
-        infoLabel.frame.origin.y = separatorView.frame.minY - infoLabel.frame.height - 15
+        infoLabel.frame = CGRect(x: 50,
+                                 y: titleLabel.frame.maxY + 5,
+                                 width: frame.width - 50 * 2,
+                                 height: 16)
+
         resizeGradientLayer()
     }
 }
@@ -338,8 +415,7 @@ open class FooterView: UIView {
 extension FooterView: LayoutConfigurable {
     
     @objc public func configureLayout() {
-        infoLabel.frame = CGRect(x: 17, y: 0, width: frame.width - 17 * 2, height: 35)
-        infoLabel.configureLayout()
+        infoLabel.frame = CGRect(x: 50, y: 0, width: frame.width - 50 * 2, height: 16)
     }
 }
 

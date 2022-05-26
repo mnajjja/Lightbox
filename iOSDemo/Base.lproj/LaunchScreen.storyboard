@@ -17,8 +17,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="speaker.slash" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="iDA-t2-hXS">
-                                <rect key="frame" x="182" y="424.5" width="50" height="48"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="goba" translatesAutoresizingMaskIntoConstraints="NO" id="iDA-t2-hXS">
+                                <rect key="frame" x="182" y="423" width="50" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="B1D-mB-Tgs"/>
                                     <constraint firstAttribute="width" constant="50" id="QLu-SO-X5A"/>
@@ -39,7 +39,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="speaker.slash" catalog="system" width="124" height="128"/>
+        <image name="goba" width="128" height="128"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

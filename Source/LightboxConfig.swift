@@ -98,6 +98,16 @@ public class LightboxConfig {
         public static var text = NSLocalizedString("", comment: "")
     }
         
+    
+    public struct TitleLabel {
+        public static var enabled = true
+        public static var textColor = UIColor.white
+        public static var textAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 16, weight: .semibold),
+            .foregroundColor: UIColor.white
+        ]
+    }
+    
     public struct InfoLabel {
         public static var enabled = true
         public static var textColor = UIColor.white
@@ -105,8 +115,8 @@ public class LightboxConfig {
         public static var ellipsisColor = UIColor(hex: "899AB9")
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 12),
-            .foregroundColor: UIColor(hex: "DBDBDB")
+            .font: UIFont.systemFont(ofSize: 14),
+            .foregroundColor: UIColor.white
         ]
     }
     

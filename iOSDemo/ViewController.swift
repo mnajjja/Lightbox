@@ -29,13 +29,11 @@ class ViewController: UIViewController {
   
     @objc func showLightbox() {
         let images = [
-            LightboxImage(image: UIImage(named: "photo2")!),
-            LightboxImage(
-                videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")
-            ),
+            LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
+            LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
             LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
-            LightboxImage(imageURL: URL(string: "https://media.giphy.com/media/Ku65904QQe4yez448B/giphy.gif")!),
-            LightboxImage(imageURL: URL(string: "https://media.giphy.com/media/lQDLwWUMPaAHvh8pAG/giphy.gif")!),
+            LightboxImage(title: "Bryan Nguyen", description: "yesterday at 18:28", imageURL: URL(string: "https://media.giphy.com/media/Ku65904QQe4yez448B/giphy.gif")!),
+            LightboxImage(title: "Bryan Nguyen", description: "AddInstanceForFactory: No factory registered for id",imageURL: URL(string: "https://media.giphy.com/media/lQDLwWUMPaAHvh8pAG/giphy.gif")!),
             LightboxImage(imageURL: URL(string: "https://media.giphy.com/media/ontKwPWJxARsuKaKqJ/giphy.gif")!)]
         
         let controller = LightboxController(images: images)
