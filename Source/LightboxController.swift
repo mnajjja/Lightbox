@@ -74,7 +74,8 @@ open class LightboxController: UIViewController {
         let view = FooterView()
         view.backgroundColor = LightboxConfig.Footer.backgroundColor
         view.delegate = self
-        view.setPlayerViewIsHidden(true)
+        view.playerContainerView.isHidden = true
+        view.imageContainerView.isHidden = false
         
         return view
     }()
@@ -122,7 +123,8 @@ open class LightboxController: UIViewController {
             }
             
             if oldValue != currentPage {
-                self.footerView.setPlayerViewIsHidden(true)
+                self.footerView.playerContainerView.isHidden = true
+                self.footerView.imageContainerView.isHidden = false
             }
         }
     }
@@ -444,7 +446,8 @@ open class LightboxController: UIViewController {
         avPlayer?.play()
         pageViews[currentPage].playerView.playerLayer.player = avPlayer
         pageViews[currentPage].loadingIndicator.alpha = 1
-        
+        footerView.muteButton.isSelected = false
+
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer.currentItem, queue: nil) { [weak self] _ in
             self?.avPlayer?.seek(to: CMTime.zero)
             self?.avPlayer?.play()
@@ -452,12 +455,14 @@ open class LightboxController: UIViewController {
         
         avPlayer?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: .main) { [weak self] _ in
             if self?.avPlayer?.currentItem?.status == .readyToPlay, let time = self?.avPlayer?.currentTime() {
-                let currentTime = CMTimeGetSeconds(time)
-                let timeInSec = Int(currentTime)
-                let timeString = NSString(format: "%02d:%02d", timeInSec/60, timeInSec%60) as String
+                
                 DispatchQueue.main.async {
-                    self?.footerView.playbackSlider.value = Float(currentTime)
-                    self?.footerView.upatetimeLabel(timeString)
+                    self?.footerView.playbackSlider.value = Float(time.seconds)
+                    self?.footerView.upateLeftTimeLabel(time.stringTime)
+                    if let duration = self?.playerItem.asset.duration {
+                        let timeToEnd = (time - duration).stringTime
+                        self?.footerView.upateRightTimeLabel(timeToEnd)
+                    }
                 }
             }
         }
@@ -498,8 +503,10 @@ open class LightboxController: UIViewController {
                     let seconds : Float64 = CMTimeGetSeconds(duration)
                     self.footerView.upatePlaybackSlider(Float(seconds))
                     self.footerView.setPlayButtonSelected(false)
-                    self.footerView.upatetimeLabel("00:00")
-                    self.footerView.setPlayerViewIsHidden(false)
+                    self.footerView.upateLeftTimeLabel("00:00")
+                    self.footerView.upateRightTimeLabel("00:00")
+                    self.footerView.imageContainerView.isHidden = true
+                    self.footerView.playerContainerView.isHidden = false
                 }
             }
         }
@@ -612,7 +619,14 @@ extension LightboxController: HeaderViewDelegate {
 // MARK: - FooterViewDelegate
 
 extension LightboxController: FooterViewDelegate {
-    public func saveButtonDidTap(_ headerView: FooterView, didPressSaveButton saveButton: UIButton) {
+    public func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
+        if let isMuted = avPlayer?.isMuted {
+            avPlayer?.isMuted = !isMuted
+            button.isSelected = !isMuted
+        }
+    }
+    
+    public func saveButtonDidTap(_ headerView: FooterView, _ saveButton: UIButton) {
         
         if let videoUrl = images[currentPage].videoURL {
             

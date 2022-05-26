@@ -77,9 +77,9 @@ public class LightboxConfig {
     
     public struct SaveButton {
         public static var enabled = true
-        public static var size: CGSize?
-        public static var text = NSLocalizedString("Save", comment: "")
-        public static var image: UIImage?
+        public static var size = CGSize(width: 24, height: 24)
+        public static var text = NSLocalizedString("", comment: "")
+        public static var image = AssetManager.image("save")
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 14),
@@ -92,6 +92,12 @@ public class LightboxConfig {
         ]
     }
     
+    public struct MuteButton {
+        public static var enabled = true
+        public static var size = CGSize(width: 24, height: 24)
+        public static var text = NSLocalizedString("", comment: "")
+    }
+        
     public struct InfoLabel {
         public static var enabled = true
         public static var textColor = UIColor.white
@@ -107,7 +113,7 @@ public class LightboxConfig {
     public struct TimeLabel {
         public static var enabled = true
         public static var textColor = UIColor.white
-        public static var font = UIFont.systemFont(ofSize: 12)
+        public static var font = UIFont.systemFont(ofSize: 11)
     }
     
     public struct Zoom {
@@ -116,7 +122,7 @@ public class LightboxConfig {
     }
     
     public struct Footer {
-        public static var backgroundColor = UIColor(hex: "26252A")
+        public static var backgroundColor = UIColor.clear
     }
     
     public struct Header {

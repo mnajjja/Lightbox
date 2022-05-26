@@ -5,11 +5,27 @@ public protocol FooterViewDelegate: AnyObject {
     func footerView(_ footerView: FooterView, didExpand expanded: Bool)
     func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider)
     func playButtonDidTap(_ footerView: FooterView, _ button: UIButton)
-    func saveButtonDidTap(_ headerView: FooterView, didPressSaveButton saveButton: UIButton)
+    func saveButtonDidTap(_ headerView: FooterView, _ button: UIButton)
+    func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton)
 }
 
 open class FooterView: UIView {
     
+    
+    open fileprivate(set) lazy var playerContainerView: UIView = { [unowned self] in
+        let view = UIView(frame: CGRect.zero)
+        view.backgroundColor = UIColor(hex: "26252A").withAlphaComponent(0.7)
+        
+        return view
+    }()
+    
+    open fileprivate(set) lazy var imageContainerView: UIView = { [unowned self] in
+        let view = UIView(frame: CGRect.zero)
+        view.backgroundColor = UIColor(hex: "26252A").withAlphaComponent(0.7)
+        
+        return view
+    }()
+
     open fileprivate(set) lazy var playbackSlider: UISlider = { [unowned self] in
         let slider = UISlider(frame: CGRect.zero)
         slider.minimumValue = 0
@@ -18,25 +34,37 @@ open class FooterView: UIView {
         slider.setThumbImage(circleImage, for: .highlighted)
         slider.isContinuous = true
         slider.tintColor = .white
-        slider.maximumTrackTintColor = .darkGray
+        slider.maximumTrackTintColor = UIColor(hex: "787880").withAlphaComponent(0.32)
         slider.addTarget(self, action: #selector(self.playbackSliderValueChanged(_:)), for: .valueChanged)
         
         return slider
     }()
     
-    open fileprivate(set) lazy var timeLabel: UILabel = { [unowned self] in
+    open fileprivate(set) lazy var leftTimeLabel: UILabel = { [unowned self] in
         let label = UILabel(frame: CGRect.zero)
         label.numberOfLines = 1
         label.isHidden = !LightboxConfig.TimeLabel.enabled
         label.textColor = LightboxConfig.TimeLabel.textColor
         label.font = LightboxConfig.TimeLabel.font
+        label.textAlignment = .left
+        
+        return label
+    }()
+    
+    open fileprivate(set) lazy var rightTimeLabel: UILabel = { [unowned self] in
+        let label = UILabel(frame: CGRect.zero)
+        label.numberOfLines = 1
+        label.isHidden = !LightboxConfig.TimeLabel.enabled
+        label.textColor = LightboxConfig.TimeLabel.textColor
+        label.font = LightboxConfig.TimeLabel.font
+        label.textAlignment = .right
         
         return label
     }()
     
     open fileprivate(set) lazy var playButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
-        button.frame.size = CGSize(width: 24, height: 24)
+        button.frame.size = CGSize(width: 20, height: 20)
         
         var playButtonImage = AssetManager.image("lightbox_play")
         var pauseButtonImage = AssetManager.image("lightbox_play")
@@ -45,8 +73,8 @@ open class FooterView: UIView {
         // When using SPM you might find that assets are note included. This is a workaround to provide default assets
         // under iOS 13 so using SPM can work without problems.
         if #available(iOS 13.0, *) {
-            playButtonImage = UIImage(systemName: "play.circle.fill")
-            pauseButtonImage = UIImage(systemName: "pause.circle.fill")
+            playButtonImage = UIImage(systemName: "play.fill")
+            pauseButtonImage = UIImage(systemName: "pause.fill")
         }
         
         button.setBackgroundImage(playButtonImage, for: .selected)
@@ -55,12 +83,33 @@ open class FooterView: UIView {
 
         button.addTarget(self, action: #selector(playButtonTouched(_:)), for: .touchUpInside)
         button.tintColor = .white
+
+        return button
+    }()
+    
+    open fileprivate(set) lazy var muteButton: UIButton = { [unowned self] in
+        let button = UIButton(type: .custom)
+        button.frame.size = LightboxConfig.MuteButton.size
+        button.isHidden = !LightboxConfig.MuteButton.enabled
         
-        button.layer.shadowOffset = CGSize(width: 1, height: 1)
-        button.layer.shadowColor = UIColor.gray.cgColor
-        button.layer.masksToBounds = false
-        button.layer.shadowOpacity = 0.8
+        var isNotMutedButtonImage = AssetManager.image("unmute")
+        var isMutedButtonImage = AssetManager.image("mute")
         
+        // Note by Elvis Nuñez on Mon 22 Jun 08:06
+        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
+        // under iOS 13 so using SPM can work without problems.
+        if #available(iOS 13.0, *) {
+          //  isMutedButtonImage = UIImage(systemName: "speaker.slash")
+            isNotMutedButtonImage = UIImage(systemName: "speaker.3")
+        }
+        
+        button.setBackgroundImage(isNotMutedButtonImage, for: .normal)
+        button.setBackgroundImage(isMutedButtonImage, for: .selected)
+        button.isSelected = false
+
+        button.addTarget(self, action: #selector(muteButtonTouched(_:)), for: .touchUpInside)
+        button.tintColor = .white.withAlphaComponent(0.7)
+
         return button
     }()
     
@@ -72,13 +121,10 @@ open class FooterView: UIView {
       let button = UIButton(type: .system)
 
       button.setAttributedTitle(title, for: .normal)
-
-      if let size = LightboxConfig.SaveButton.size {
-        button.frame.size = size
-      } else {
-        button.sizeToFit()
-      }
-
+      button.frame.size = LightboxConfig.SaveButton.size
+      button.setImage(LightboxConfig.SaveButton.image, for: UIControl.State())
+      button.tintColor = .white
+        
       button.addTarget(self, action: #selector(saveButtonDidTap(_:)), for: .touchUpInside)
 
       if let image = LightboxConfig.DeleteButton.image {
@@ -118,7 +164,6 @@ open class FooterView: UIView {
     }()
     
     let gradientColors = [UIColor(hex: "040404").withAlphaComponent(0.1), UIColor(hex: "040404")]
-    private var playerViews = [UIView]()
     open weak var delegate: FooterViewDelegate?
     
     // MARK: - Actions
@@ -131,8 +176,12 @@ open class FooterView: UIView {
         delegate?.playButtonDidTap(self, button)
     }
     
+    @objc func muteButtonTouched(_ button: UIButton) {
+        delegate?.muteButtonDidTap(self, button)
+    }
+    
     @objc func saveButtonDidTap(_ button: UIButton) {
-        delegate?.saveButtonDidTap(self, didPressSaveButton: button)
+        delegate?.saveButtonDidTap(self, button)
     }
     
     // MARK: - Initializers
@@ -143,8 +192,8 @@ open class FooterView: UIView {
         backgroundColor = UIColor.clear
         _ = addGradientLayer(gradientColors)
         
-        [playbackSlider, timeLabel, playButton, saveButton].forEach { addSubview($0) }
-        playerViews = [playbackSlider, timeLabel, playButton]
+        [playbackSlider, leftTimeLabel, rightTimeLabel, playButton, muteButton].forEach { playerContainerView.addSubview($0) }
+        [imageContainerView, playerContainerView, saveButton].forEach { addSubview($0) }
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -167,11 +216,7 @@ open class FooterView: UIView {
         
         return image
     }
-    
-    func setPlayerViewIsHidden(_ isHidden: Bool) {
-        playerViews.forEach( {$0.isHidden = isHidden} )
-    }
-    
+
     func expand(_ expand: Bool) {
         expand ? infoLabel.expand() : infoLabel.collapse()
     }
@@ -193,8 +238,12 @@ open class FooterView: UIView {
         playbackSlider.value = 0
     }
     
-    func upatetimeLabel(_ text: String ) {
-        timeLabel.text = text
+    func upateLeftTimeLabel(_ text: String?) {
+        leftTimeLabel.text = text
+    }
+    
+    func upateRightTimeLabel(_ text: String?) {
+        rightTimeLabel.text = text
     }
     
     func updateText(_ text: String) {
@@ -224,29 +273,53 @@ open class FooterView: UIView {
             )
         }
         
-        playbackSlider.frame = CGRect(
+        playerContainerView.frame = CGRect(
             x: 0,
-            y: 5,
+            y: 0,
             width: frame.width,
-            height: 20
+            height: frame.height
         )
         
-        timeLabel.frame = CGRect(
-            x: 5,
-            y: playbackSlider.frame.maxY + 10,
+        imageContainerView.frame = CGRect(
+            x: 0,
+            y: frame.height - 85,
+            width: frame.width,
+            height: 85
+        )
+        
+        playbackSlider.frame = CGRect(
+            x: 15,
+            y: 16,
+            width: frame.width - 30,
+            height: 5
+        )
+        
+        leftTimeLabel.frame = CGRect(
+            x: 15,
+            y: playbackSlider.frame.maxY + 8,
             width: 100,
-            height: 20
+            height: 13
         )
         
-        playButton.frame.origin = CGPoint(
-            x: ((frame.width) / 2) - 12,
-            y: playbackSlider.frame.maxY + 10
+        rightTimeLabel.frame = CGRect(
+            x: bounds.width - rightTimeLabel.frame.width - 15,
+            y: playbackSlider.frame.maxY + 8,
+            width: 100,
+            height: 13
         )
-        
+
         saveButton.frame.origin = CGPoint(
-          x: bounds.width - saveButton.frame.width - 5,
-          y: playbackSlider.frame.maxY + 5
+          x: bounds.width - saveButton.frame.width - 15,
+          y: bounds.height - saveButton.frame.height - 41
         )
+        
+        muteButton.frame.origin = CGPoint(
+          x: 15,
+          y: saveButton.frame.minY
+        )
+        
+        playButton.center.x = center.x
+        playButton.center.y = saveButton.center.y
         
         separatorView.frame = CGRect(
             x: 0,
@@ -256,8 +329,6 @@ open class FooterView: UIView {
         )
         
         infoLabel.frame.origin.y = separatorView.frame.minY - infoLabel.frame.height - 15
-        timeLabel.frame.origin.y = playbackSlider.frame.maxY + 10
-        
         resizeGradientLayer()
     }
 }
