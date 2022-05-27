@@ -16,7 +16,7 @@
 		44E6A6662495C0EB00543CF0 /* Lightbox.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D523B0A91C43AA2A001AD1EC /* Lightbox.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		85CB007027B16C6900A47BB3 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 85CB006F27B16C6900A47BB3 /* SDWebImage */; };
 		9AAC1728283FC52B003F0A93 /* CMTime+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAC1727283FC52B003F0A93 /* CMTime+Extension.swift */; };
-		9AAC17322840DB7E003F0A93 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAC17312840DB7E003F0A93 /* MessageView.swift */; };
+		9AAC17332840F0ED003F0A93 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAC17312840DB7E003F0A93 /* MessageView.swift */; };
 		9ACBD905283E3B3700B4D493 /* PhotoLibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */; };
 		9ACBD907283E883700B4D493 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD906283E883700B4D493 /* Date+Extensions.swift */; };
 		9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */; };
@@ -352,7 +352,7 @@
 				D523B0BE1C43AA8B001AD1EC /* LightboxController.swift in Sources */,
 				9ACBD907283E883700B4D493 /* Date+Extensions.swift in Sources */,
 				D54DFCBE1C5AAAD600ADEA0E /* InfoLabel.swift in Sources */,
-				9AAC17322840DB7E003F0A93 /* MessageView.swift in Sources */,
+				9AAC17332840F0ED003F0A93 /* MessageView.swift in Sources */,
 				D58A18CB1C5ABF8F000024BB /* FooterView.swift in Sources */,
 				D573A2F01C5B5605006053DD /* HeaderView.swift in Sources */,
 				D573A2F51C5B5CA4006053DD /* LightboxTransition.swift in Sources */,
