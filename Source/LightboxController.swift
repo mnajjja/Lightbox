@@ -61,6 +61,15 @@ open class LightboxController: UIViewController {
     
     // MARK: - Public views
     
+    
+    
+    open fileprivate(set) lazy var messageView: MessageView = { [unowned self] in
+        let view = MessageView()
+        view.alpha = 0
+        
+        return view
+    }()
+    
     open fileprivate(set) lazy var headerView: HeaderView = { [unowned self] in
         let view = HeaderView()
         view.backgroundColor = LightboxConfig.Header.backgroundColor
@@ -222,7 +231,7 @@ open class LightboxController: UIViewController {
         transitionManager.scrollView = scrollView
         transitioningDelegate = transitionManager
         
-        [scrollView, overlayView, headerView, footerView].forEach { view.addSubview($0) }
+        [scrollView, overlayView, headerView, footerView, messageView].forEach { view.addSubview($0) }
         overlayView.addGestureRecognizer(overlayTapGestureRecognizer)
         
         configurePages(initialImages)
@@ -239,9 +248,15 @@ open class LightboxController: UIViewController {
         super.viewDidLayoutSubviews()
         
         scrollView.frame = view.bounds
+        
         footerView.frame.size = CGSize(
             width: view.bounds.width,
             height: 118
+        )
+        
+        messageView.frame.size = CGSize(
+            width: view.bounds.width - 40,
+            height: 50
         )
 
         footerView.frame.origin = CGPoint(
@@ -254,6 +269,11 @@ open class LightboxController: UIViewController {
             y: 0,
             width: view.bounds.width,
             height: 85
+        )
+        
+        messageView.frame.origin = CGPoint (
+            x: 20,
+            y: view.frame.maxY - messageView.frame.height - 35
         )
         
         if !presented {
@@ -514,6 +534,16 @@ open class LightboxController: UIViewController {
             }
         }
     }
+    
+    // MARK: - Info Message
+    
+    func showMessage(text: String) {
+        messageView.alpha = 1
+        messageView.text = text
+        UIView.animate(withDuration: 0.75, delay: 0.75, options: .curveEaseIn, animations: {
+            self.messageView.alpha = 0
+        })
+    }
 }
 
 // MARK: - UIScrollViewDelegate
@@ -659,6 +689,12 @@ extension LightboxController: FooterViewDelegate {
                 DispatchQueue.main.async {
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: videoUrl, result: (success, error))
+                    
+                    if success {
+                        self?.showMessage(text: "Video saved to Photos.")
+                    } else {
+                        self?.showMessage(text: "Video not saved. Error: \(error?.localizedDescription ?? "")")
+                    }
                 }
             }
         } else if let imageUrl = images[currentPage].imageURL {
@@ -668,6 +704,11 @@ extension LightboxController: FooterViewDelegate {
                 DispatchQueue.main.async {
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: imageUrl, result: (success, error))
+                    if success {
+                        self?.showMessage(text: "Image saved to Photos.")
+                    } else {
+                        self?.showMessage(text: "Image not saved. Error: \(error?.localizedDescription ?? "")")
+                    }
                 }
             }
         } else if let image = images[currentPage].image {
@@ -677,6 +718,11 @@ extension LightboxController: FooterViewDelegate {
                 DispatchQueue.main.async {
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: nil, result: (success, error))
+                    if success {
+                        self?.showMessage(text: "Image saved to Photos.")
+                    } else {
+                        self?.showMessage(text: "Image not saved. Error: \(error?.localizedDescription ?? "")")
+                    }
                 }
             }
         }
