@@ -3,24 +3,31 @@ import SDWebImage
 import AVKit
 
 public protocol LightboxControllerPageDelegate: AnyObject {
-
-  func lightboxController(_ controller: LightboxController, didMoveToPage page: Int)
+    
+    func lightboxController(_ controller: LightboxController, didMoveToPage page: Int)
 }
 
 public protocol LightboxControllerDismissalDelegate: AnyObject {
-
-  func lightboxControllerWillDismiss(_ controller: LightboxController)
+    
+    func lightboxControllerWillDismiss(_ controller: LightboxController)
 }
 
 public protocol LightboxControllerTouchDelegate: AnyObject {
-
-  func lightboxController(_ controller: LightboxController, didTouch image: LightboxImage, at index: Int)
+    
+    func lightboxController(_ controller: LightboxController, didTouch image: LightboxImage, at index: Int)
 }
 
 public protocol LightboxSaveDelegate: AnyObject {
-
-  func lightboxControllerSaveMedia(_ controller: LightboxController?, from url: URL?, result: (Bool, Error?))
+    
+    func lightboxControllerSaveMedia(_ controller: LightboxController?, from url: URL?, result: (Bool, Error?))
 }
+
+public protocol LightboxPreloadDelegate: AnyObject {
+    
+    func lightboxControllerWillReachRightEnd(_ controller: LightboxController?)
+    func lightboxControllerWillReachLeftEnd(_ controller: LightboxController?)
+}
+
 
 
 open class LightboxController: UIViewController {
@@ -74,7 +81,7 @@ open class LightboxController: UIViewController {
         let view = HeaderView()
         view.backgroundColor = LightboxConfig.Header.backgroundColor
         view.delegate = self
-       
+        
         
         return view
     }()
@@ -104,6 +111,7 @@ open class LightboxController: UIViewController {
     
     open fileprivate(set) var currentPage = 0 {
         didSet {
+            print("currentPage \(currentPage)")
             currentPage = min(numberOfPages - 1, max(0, currentPage))
             footerView.updatePage(currentPage + 1, numberOfPages)
             let title = pageViews[currentPage].image.title
@@ -122,20 +130,23 @@ open class LightboxController: UIViewController {
                 }
             }
 
-            // Stop Playing Video for Previous
-            if pageViews[oldValue].image.hasVideoContent {
-                killPlayer()
+            if oldValue != currentPage {
+                self.killPlayer()
+                self.footerView.playerContainerView.isHidden = true
+                self.footerView.imageContainerView.isHidden = false
             }
             
             // Start Playing Video for currentPage
             if let videoUrl = pageViews[currentPage].image.videoURL {
                 guard oldValue != currentPage else { return }
-                configurePlayer(videoUrl)
+                self.configurePlayer(videoUrl)
+
             }
             
-            if oldValue != currentPage {
-                self.footerView.playerContainerView.isHidden = true
-                self.footerView.imageContainerView.isHidden = false
+            if oldValue < currentPage, (pageViews.count - currentPage) == LightboxConfig.itemsToEnd {
+                prelodMediaDelegate?.lightboxControllerWillReachRightEnd(self)
+            } else if oldValue > currentPage, (currentPage - LightboxConfig.itemsToEnd) == 0 {
+                prelodMediaDelegate?.lightboxControllerWillReachLeftEnd(self)
             }
         }
     }
@@ -165,19 +176,26 @@ open class LightboxController: UIViewController {
     }
     
     open var images: [LightboxImage] {
-        get {
-            return pageViews.map { $0.image }
-        }
-        set(value) {
-            initialImages = value
-            configurePages(value)
-        }
+        return pageViews.map { $0.image }
+    }
+    
+    public func appendNewImages(_ newImages: [LightboxImage]) {
+        initialImages.append(contentsOf: newImages)
+        configurePages(newImages, setContentOffset: false)
+    }
+    
+    public func insertNewImages(_ newImages: [LightboxImage]) {
+        print("insertNewImages")
+        initialImages = newImages + initialImages
+        configureNewPages(newImages)
     }
     
     open weak var pageDelegate: LightboxControllerPageDelegate?
     open weak var dismissalDelegate: LightboxControllerDismissalDelegate?
     open weak var imageTouchDelegate: LightboxControllerTouchDelegate?
     open weak var mediaSaveDelegate: LightboxSaveDelegate?
+    open weak var prelodMediaDelegate: LightboxPreloadDelegate?
+    
     open internal(set) var presented = false
     open fileprivate(set) var seen = false
     
@@ -212,7 +230,7 @@ open class LightboxController: UIViewController {
     deinit {
         removeObservers()
     }
-
+    
     
     // MARK: - View lifecycle
     
@@ -243,7 +261,7 @@ open class LightboxController: UIViewController {
             configurePlayer(videoUrl)
         }
     }
- 
+    
     open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
@@ -258,7 +276,7 @@ open class LightboxController: UIViewController {
             width: view.bounds.width - 40,
             height: 50
         )
-
+        
         footerView.frame.origin = CGPoint(
             x: 0,
             y: view.bounds.height - footerView.frame.height
@@ -298,9 +316,9 @@ open class LightboxController: UIViewController {
     
     // MARK: - Configuration
     
-    func configurePages(_ images: [LightboxImage]) {
-        pageViews.forEach { $0.removeFromSuperview() }
-        pageViews = []
+    func configurePages(_ images: [LightboxImage], setContentOffset: Bool = true) {
+        //pageViews.forEach { $0.removeFromSuperview() }
+        //pageViews = []
         
         let preloadIndicies = calculatePreloadIndicies()
         
@@ -312,7 +330,20 @@ open class LightboxController: UIViewController {
             pageViews.append(pageView)
         }
         
-        configureLayout(view.bounds.size)
+        configureLayout(view.bounds.size, setContentOffset: setContentOffset)
+    }
+    
+    func configureNewPages(_ images: [LightboxImage]) {        
+        for i in 0..<images.count {
+            let pageView = PageView(image: LightboxConfig.preload > i ? images[i] : LightboxImageStub())
+            pageView.pageViewDelegate = self
+            
+            scrollView.insertSubview(pageView, at: 0)
+            pageViews.insert(pageView, at: 0)
+        }
+        
+        self.currentPage += images.count
+        self.updateLayout(self.view.bounds.size)
     }
     
     func reconfigurePagesForPreload() {
@@ -364,12 +395,15 @@ open class LightboxController: UIViewController {
     
     // MARK: - Layout
     
-    open func configureLayout(_ size: CGSize) {
+    open func configureLayout(_ size: CGSize, setContentOffset: Bool = true) {
         scrollView.frame.size = size
         scrollView.contentSize = CGSize(
             width: size.width * CGFloat(numberOfPages) + spacing * CGFloat(numberOfPages - 1),
             height: size.height)
-        scrollView.contentOffset = CGPoint(x: CGFloat(currentPage) * (size.width + spacing), y: 0)
+        
+        if setContentOffset {
+            scrollView.contentOffset = CGPoint(x: CGFloat(currentPage) * (size.width + spacing), y: 0)
+        }
         
         for (index, pageView) in pageViews.enumerated() {
             var frame = scrollView.bounds
@@ -386,6 +420,29 @@ open class LightboxController: UIViewController {
         overlayView.frame = scrollView.frame
         overlayView.resizeGradientLayer()
     }
+    
+    open func updateLayout(_ size: CGSize) {
+        scrollView.frame.size = size
+        scrollView.contentSize = CGSize(
+            width: size.width * CGFloat(numberOfPages) + spacing * CGFloat(numberOfPages - 1),
+            height: size.height)
+        
+        scrollView.contentOffset = CGPoint(x: CGFloat(currentPage) * (size.width + spacing), y: 0)
+        
+        for (index, pageView) in pageViews.enumerated() {
+            var frame = scrollView.bounds
+            frame.origin.x = (frame.width + spacing) * CGFloat(index)
+            pageView.frame = frame
+            pageView.configureLayout()
+            if index != numberOfPages - 1 {
+                pageView.frame.size.width += spacing
+            }
+        }
+        
+        overlayView.frame = scrollView.frame
+        overlayView.resizeGradientLayer()
+    }
+    
     
     fileprivate func loadDynamicBackground(_ image: UIImage) {
         backgroundView.image = image
@@ -420,7 +477,7 @@ open class LightboxController: UIViewController {
     
     
     // MARK: - Observers
-
+    
     private func addObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(pauseVideoForBackgrounding), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(playVideoForForegrounding), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -430,7 +487,7 @@ open class LightboxController: UIViewController {
         playerItem?.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.status))
         NotificationCenter.default.removeObserver(self)
     }
-
+    
     @objc
     private func pauseVideoForBackgrounding() {
         if avPlayer?.rate != 0 {
@@ -452,15 +509,16 @@ open class LightboxController: UIViewController {
     // MARK: - Player
     
     func configurePlayer(_ url: URL) {
+        print("configurePlayer \(url)")
         asset = AVAsset(url: url)
         playerItem = AVPlayerItem(asset: asset,
                                   automaticallyLoadedAssetKeys: requiredAssetKeys)
         
         playerItem?.addObserver(self,
-                                   forKeyPath: #keyPath(AVPlayerItem.status),
-                                   options: [.old, .new],
-                                   context: &playerItemContext)
-            
+                                forKeyPath: #keyPath(AVPlayerItem.status),
+                                options: [.old, .new],
+                                context: &playerItemContext)
+        
         avPlayer = AVPlayer(playerItem: playerItem)
         
         avPlayer?.isMuted = false
@@ -468,7 +526,7 @@ open class LightboxController: UIViewController {
         pageViews[currentPage].playerView.playerLayer.player = avPlayer
         pageViews[currentPage].loadingIndicator.alpha = 1
         footerView.muteButton.isSelected = false
-
+        
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer.currentItem, queue: nil) { [weak self] _ in
             self?.avPlayer?.seek(to: CMTime.zero)
             self?.avPlayer?.play()
@@ -491,15 +549,16 @@ open class LightboxController: UIViewController {
     
     
     func killPlayer() {
+        print("killPlayer")
         avPlayer?.pause()
         avPlayer = nil
     }
     
     open override func observeValue(forKeyPath keyPath: String?,
-                               of object: Any?,
-                               change: [NSKeyValueChangeKey : Any]?,
-                               context: UnsafeMutableRawPointer?) {
-
+                                    of object: Any?,
+                                    change: [NSKeyValueChangeKey : Any]?,
+                                    context: UnsafeMutableRawPointer?) {
+        
         // Only handle observations for the playerItemContext
         guard context == &playerItemContext else {
             super.observeValue(forKeyPath: keyPath,
@@ -508,7 +567,7 @@ open class LightboxController: UIViewController {
                                context: context)
             return
         }
-
+        
         if keyPath == #keyPath(AVPlayerItem.status) {
             let status: AVPlayerItem.Status
             if let statusNumber = change?[.newKey] as? NSNumber {
@@ -549,28 +608,28 @@ open class LightboxController: UIViewController {
 // MARK: - UIScrollViewDelegate
 
 extension LightboxController: UIScrollViewDelegate {
-
-  public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-    var speed: CGFloat = velocity.x < 0 ? -2 : 2
-
-    if velocity.x == 0 {
-      speed = 0
+    
+    public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        var speed: CGFloat = velocity.x < 0 ? -2 : 2
+        
+        if velocity.x == 0 {
+            speed = 0
+        }
+        
+        let pageWidth = scrollView.bounds.width + spacing
+        var x = scrollView.contentOffset.x + speed * 60.0
+        
+        if speed > 0 {
+            x = ceil(x / pageWidth) * pageWidth
+        } else if speed < -0 {
+            x = floor(x / pageWidth) * pageWidth
+        } else {
+            x = round(x / pageWidth) * pageWidth
+        }
+        
+        targetContentOffset.pointee.x = x
+        currentPage = Int(x / pageWidth)
     }
-
-    let pageWidth = scrollView.bounds.width + spacing
-    var x = scrollView.contentOffset.x + speed * 60.0
-
-    if speed > 0 {
-      x = ceil(x / pageWidth) * pageWidth
-    } else if speed < -0 {
-      x = floor(x / pageWidth) * pageWidth
-    } else {
-      x = round(x / pageWidth) * pageWidth
-    }
-
-    targetContentOffset.pointee.x = x
-    currentPage = Int(x / pageWidth)
-  }
 }
 
 // MARK: - PageViewDelegate
@@ -579,74 +638,74 @@ extension LightboxController: PageViewDelegate {
     func playerDidPlayToEndTime(_ pageView: PageView) {
         toggleControls(pageView: pageView, visible: true)
     }
-
-  func remoteImageDidLoad(_ image: UIImage?, imageView: SDAnimatedImageView) {
-    guard let image = image, dynamicBackground else {
-      return
+    
+    func remoteImageDidLoad(_ image: UIImage?, imageView: SDAnimatedImageView) {
+        guard let image = image, dynamicBackground else {
+            return
+        }
+        
+        let imageViewFrame = imageView.convert(imageView.frame, to: view)
+        guard view.frame.intersects(imageViewFrame) else {
+            return
+        }
+        
+        loadDynamicBackground(image)
     }
-
-    let imageViewFrame = imageView.convert(imageView.frame, to: view)
-    guard view.frame.intersects(imageViewFrame) else {
-      return
+    
+    func pageViewDidZoom(_ pageView: PageView) {
+        let duration = pageView.hasZoomed ? 0.1 : 0.5
+        toggleControls(pageView: pageView, visible: !pageView.hasZoomed, duration: duration, delay: 0.5)
     }
-
-    loadDynamicBackground(image)
-  }
-
-  func pageViewDidZoom(_ pageView: PageView) {
-    let duration = pageView.hasZoomed ? 0.1 : 0.5
-    toggleControls(pageView: pageView, visible: !pageView.hasZoomed, duration: duration, delay: 0.5)
-  }
-
-  func pageViewDidTouch(_ pageView: PageView) {
-    guard !pageView.hasZoomed else { return }
-
-    imageTouchDelegate?.lightboxController(self, didTouch: images[currentPage], at: currentPage)
-
-    let visible = (headerView.alpha == 1.0)
-    toggleControls(pageView: pageView, visible: !visible)
-  }
+    
+    func pageViewDidTouch(_ pageView: PageView) {
+        guard !pageView.hasZoomed else { return }
+        
+        imageTouchDelegate?.lightboxController(self, didTouch: images[currentPage], at: currentPage)
+        
+        let visible = (headerView.alpha == 1.0)
+        toggleControls(pageView: pageView, visible: !visible)
+    }
 }
 
 
 // MARK: - HeaderViewDelegate
 
 extension LightboxController: HeaderViewDelegate {
-
-  func headerView(_ headerView: HeaderView, didPressDeleteButton deleteButton: UIButton) {
-    deleteButton.isEnabled = false
-
-    guard numberOfPages != 1 else {
-      pageViews.removeAll()
-      self.headerView(headerView, didPressCloseButton: headerView.closeButton)
-      return
+    
+    func headerView(_ headerView: HeaderView, didPressDeleteButton deleteButton: UIButton) {
+        deleteButton.isEnabled = false
+        
+        guard numberOfPages != 1 else {
+            pageViews.removeAll()
+            self.headerView(headerView, didPressCloseButton: headerView.closeButton)
+            return
+        }
+        
+        let prevIndex = currentPage
+        
+        if currentPage == numberOfPages - 1 {
+            previous()
+        } else {
+            next()
+            currentPage -= 1
+        }
+        
+        self.initialImages.remove(at: prevIndex)
+        self.pageViews.remove(at: prevIndex).removeFromSuperview()
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
+            self.configureLayout(self.view.bounds.size)
+            self.currentPage = Int(self.scrollView.contentOffset.x / self.view.bounds.width)
+            deleteButton.isEnabled = true
+        }
     }
-
-    let prevIndex = currentPage
-
-    if currentPage == numberOfPages - 1 {
-      previous()
-    } else {
-      next()
-      currentPage -= 1
+    
+    func headerView(_ headerView: HeaderView, didPressCloseButton closeButton: UIButton) {
+        closeButton.isEnabled = false
+        presented = false
+        dismissalDelegate?.lightboxControllerWillDismiss(self)
+        dismiss(animated: true, completion: nil)
     }
-
-    self.initialImages.remove(at: prevIndex)
-    self.pageViews.remove(at: prevIndex).removeFromSuperview()
-
-    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
-      self.configureLayout(self.view.bounds.size)
-      self.currentPage = Int(self.scrollView.contentOffset.x / self.view.bounds.width)
-      deleteButton.isEnabled = true
-    }
-  }
-
-  func headerView(_ headerView: HeaderView, didPressCloseButton closeButton: UIButton) {
-    closeButton.isEnabled = false
-    presented = false
-    dismissalDelegate?.lightboxControllerWillDismiss(self)
-    dismiss(animated: true, completion: nil)
-  }
 }
 
 // MARK: - FooterViewDelegate
@@ -744,11 +803,11 @@ extension LightboxController: FooterViewDelegate {
         avPlayer?.seek(to: targetTime)
     }
     
-
-  public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
-    UIView.animate(withDuration: 0.25, animations: {
-      self.overlayView.alpha = expanded ? 1.0 : 0.0
-      self.headerView.deleteButton.alpha = expanded ? 0.0 : 1.0
-    })
-  }
+    
+    public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
+        UIView.animate(withDuration: 0.25, animations: {
+            self.overlayView.alpha = expanded ? 1.0 : 0.0
+            self.headerView.deleteButton.alpha = expanded ? 0.0 : 1.0
+        })
+    }
 }

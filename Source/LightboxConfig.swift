@@ -26,6 +26,11 @@ public class LightboxConfig {
     /// 0 - Preload all images (default).
     public static var preload = 0
     
+    /// Number of images left to rich the end
+    ///
+    /// 0 - Never preload
+    public static var itemsToEnd = 0
+    
     public struct PageIndicator {
         public static var enabled = false
         public static var separatorColor = UIColor(hex: "3D4757")
