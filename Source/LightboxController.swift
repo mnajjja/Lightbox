@@ -752,6 +752,7 @@ extension LightboxController: FooterViewDelegate {
     }
     
     public func saveButtonDidTap(_ headerView: FooterView, _ saveButton: UIButton) {
+        guard images.count > 0 else { return }
         
         if let videoUrl = images[currentPage].videoURL {
             
