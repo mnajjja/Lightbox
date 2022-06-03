@@ -245,7 +245,7 @@ open class LightboxController: UIViewController {
         goTo(initialPage, animated: false)
         
         // Start Play Video for currentPage
-        if let videoUrl = pageViews[currentPage].image.videoURL {
+        if pageViews.count > 0, let videoUrl = pageViews[currentPage].image.videoURL {
             configurePlayer(videoUrl)
         }
     }
