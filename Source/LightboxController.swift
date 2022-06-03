@@ -111,7 +111,8 @@ open class LightboxController: UIViewController {
     
     open fileprivate(set) var currentPage = 0 {
         didSet {
-            print("currentPage \(currentPage)")
+            let isReachedStartIndex = currentPage == -1
+
             currentPage = min(numberOfPages - 1, max(0, currentPage))
             footerView.updatePage(currentPage + 1, numberOfPages)
             let title = pageViews[currentPage].image.title
@@ -142,10 +143,9 @@ open class LightboxController: UIViewController {
                 self.configurePlayer(videoUrl)
 
             }
-            
-            if oldValue < currentPage, (pageViews.count - currentPage) == LightboxConfig.itemsToEnd {
+            if oldValue < currentPage, (pageViews.count - currentPage) <= LightboxConfig.itemsToEnd {
                 prelodMediaDelegate?.lightboxControllerWillReachRightEnd(self)
-            } else if oldValue > currentPage, (currentPage - LightboxConfig.itemsToEnd) == 0 {
+            } else if oldValue > currentPage || isReachedStartIndex, (currentPage - LightboxConfig.itemsToEnd) <= 0 {
                 prelodMediaDelegate?.lightboxControllerWillReachLeftEnd(self)
             }
         }
@@ -177,17 +177,6 @@ open class LightboxController: UIViewController {
     
     open var images: [LightboxImage] {
         return pageViews.map { $0.image }
-    }
-    
-    public func appendNewImages(_ newImages: [LightboxImage]) {
-        initialImages.append(contentsOf: newImages)
-        configurePages(newImages, setContentOffset: false)
-    }
-    
-    public func insertNewImages(_ newImages: [LightboxImage]) {
-        print("insertNewImages")
-        initialImages = newImages + initialImages
-        configureNewPages(newImages)
     }
     
     open weak var pageDelegate: LightboxControllerPageDelegate?
@@ -225,7 +214,6 @@ open class LightboxController: UIViewController {
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
     
     deinit {
         removeObservers()
@@ -314,8 +302,24 @@ open class LightboxController: UIViewController {
         }, completion: nil)
     }
     
-    // MARK: - Configuration
+    // MARK: - Images Updating
     
+    /// Add new images to Right
+    ///
+    public func appendNewImages(_ newImages: [LightboxImage]) {
+        initialImages.append(contentsOf: newImages)
+        configurePages(newImages, setContentOffset: false)
+    }
+    
+    /// Add new images to Left
+    ///
+    public func insertNewImages(_ newImages: [LightboxImage]) {
+        initialImages = newImages + initialImages
+        configureNewPages(newImages)
+    }
+    
+    // MARK: - Configuration
+
     func configurePages(_ images: [LightboxImage], setContentOffset: Bool = true) {
         //pageViews.forEach { $0.removeFromSuperview() }
         //pageViews = []
@@ -333,7 +337,7 @@ open class LightboxController: UIViewController {
         configureLayout(view.bounds.size, setContentOffset: setContentOffset)
     }
     
-    func configureNewPages(_ images: [LightboxImage]) {        
+    func configureNewPages(_ images: [LightboxImage]) {
         for i in 0..<images.count {
             let pageView = PageView(image: LightboxConfig.preload > i ? images[i] : LightboxImageStub())
             pageView.pageViewDelegate = self
@@ -343,7 +347,17 @@ open class LightboxController: UIViewController {
         }
         
         self.currentPage += images.count
-        self.updateLayout(self.view.bounds.size)
+        
+        /// Update Layout only when scrollViewDidEndDragging
+        ///
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+            if !self.scrollView.isDragging {
+                DispatchQueue.main.async {
+                    self.updateLayout(self.view.bounds.size)
+                    timer.invalidate()
+                }
+            }
+        }
     }
     
     func reconfigurePagesForPreload() {
@@ -509,7 +523,6 @@ open class LightboxController: UIViewController {
     // MARK: - Player
     
     func configurePlayer(_ url: URL) {
-        print("configurePlayer \(url)")
         asset = AVAsset(url: url)
         playerItem = AVPlayerItem(asset: asset,
                                   automaticallyLoadedAssetKeys: requiredAssetKeys)
@@ -549,7 +562,6 @@ open class LightboxController: UIViewController {
     
     
     func killPlayer() {
-        print("killPlayer")
         avPlayer?.pause()
         avPlayer = nil
     }

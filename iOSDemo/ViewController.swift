@@ -3,6 +3,21 @@ import Lightbox
 
 class ViewController: UIViewController {
     
+    var controller: LightboxController!
+    
+    let images = [
+        LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
+        LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300"), image: nil, videoURL: nil),
+        LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
+        LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300"), image: nil, videoURL: nil),
+        LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
+        LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300"), image: nil, videoURL: nil),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
+    ]
+        
     lazy var showButton: UIButton = { [unowned self] in
         let button = UIButton()
         button.addTarget(self, action: #selector(showLightbox), for: .touchUpInside)
@@ -26,33 +41,14 @@ class ViewController: UIViewController {
         LightboxConfig.itemsToEnd = 5
     }
     
-    let images = [
-        LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
-        LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300"), image: nil, videoURL: nil),
-        LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
-        LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300"), image: nil, videoURL: nil),
-        LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28"),
-        LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300"), image: nil, videoURL: nil),
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
-    ]
-    
-    var controller: LightboxController!
     // MARK: - Action methods
     
     @objc func showLightbox() {
-        controller = LightboxController(images: [LightboxImage(image: UIImage(named: "photo2")!, title: "Bryan Nguyen", description: "yesterday at 18:28")])
+        controller = LightboxController(images: images, startIndex: 3)
         controller.prelodMediaDelegate = self
         
         controller.modalPresentationStyle = .fullScreen
-        present(controller, animated: true) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.controller?.appendNewImages(self.images)
-                self.controller?.insertNewImages(self.images)
-            }
-        }
+        present(controller, animated: true)
     }
 }
 
