@@ -185,14 +185,15 @@ open class LightboxController: UIViewController {
     open weak var mediaSaveDelegate: LightboxSaveDelegate?
     open weak var prelodMediaDelegate: LightboxPreloadDelegate?
     
+    open var initialImages: [LightboxImage]
+    open var initialPage: Int
     open internal(set) var presented = false
     open fileprivate(set) var seen = false
     
     lazy var transitionManager: LightboxTransition = LightboxTransition()
     var pageViews = [PageView]()
     var statusBarHidden = false
-    var initialImages: [LightboxImage]
-    var initialPage: Int
+
     
     private var avPlayer : AVPlayer!
     private var asset: AVAsset!
