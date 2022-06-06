@@ -191,7 +191,8 @@ open class LightboxController: UIViewController {
     lazy var transitionManager: LightboxTransition = LightboxTransition()
     var pageViews = [PageView]()
     var statusBarHidden = false
-    
+    var initialImages: [LightboxImage]
+    var initialPage: Int
     
     private var avPlayer : AVPlayer!
     private var asset: AVAsset!
@@ -200,8 +201,7 @@ open class LightboxController: UIViewController {
     private var playerStatus: AVPlayerItem.Status!
     private let requiredAssetKeys = ["playable", "hasProtectedContent"]
     private var pausedForBackgrounding = false
-    fileprivate var initialImages: [LightboxImage]
-    fileprivate let initialPage: Int
+
     
     // MARK: - Initializers
     
