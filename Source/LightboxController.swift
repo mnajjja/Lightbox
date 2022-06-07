@@ -319,6 +319,22 @@ open class LightboxController: UIViewController {
         configureNewPages(newImages)
     }
     
+    /// Update LightboxImage Video Url
+    ///
+    public func updateLightboxVideoUrl(page: Int, with url: URL?) {
+        guard page < scrollView.subviews.count else { return }
+        (scrollView.subviews[page] as? PageView)?.image = LightboxImage(videoURL: url)
+        (scrollView.subviews[page] as? PageView)?.configure()
+    }
+    
+    /// Update LightboxImage Image Url
+    ///
+    public func updateLightboxImageUrl(page: Int, with url: URL?) {
+        guard page < scrollView.subviews.count else { return }
+        (scrollView.subviews[page] as? PageView)?.image = LightboxImage(imageURL: url)
+        (scrollView.subviews[page] as? PageView)?.configure()
+    }
+    
     // MARK: - Configuration
 
     func configurePages(_ images: [LightboxImage], setContentOffset: Bool = true) {
@@ -523,7 +539,7 @@ open class LightboxController: UIViewController {
     
     // MARK: - Player
     
-    func configurePlayer(_ url: URL) {
+    open func configurePlayer(_ url: URL) {
         asset = AVAsset(url: url)
         playerItem = AVPlayerItem(asset: asset,
                                   automaticallyLoadedAssetKeys: requiredAssetKeys)
