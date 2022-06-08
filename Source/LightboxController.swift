@@ -287,6 +287,9 @@ open class LightboxController: UIViewController {
             configureLayout(view.bounds.size)
         }
     }
+    open override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+    }
     
     open override var prefersStatusBarHidden: Bool {
         return LightboxConfig.hideStatusBar
@@ -368,7 +371,8 @@ open class LightboxController: UIViewController {
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
             guard let self = self else { return }
             if !self.scrollView.isDragging {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self]  in
+                    guard let self = self else { return }
                     timer.invalidate()
                     self.currentPage += images.count
                     self.updateLayout(self.view.bounds.size)
@@ -565,7 +569,7 @@ open class LightboxController: UIViewController {
         
         avPlayer?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: .main) { [weak self] _ in
             if self?.avPlayer?.currentItem?.status == .readyToPlay, let time = self?.avPlayer?.currentTime() {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self]  in
                     self?.footerView.playbackSlider.value = Float(time.seconds)
                     self?.footerView.upateLeftTimeLabel(time.stringTime)
                     if let duration = self?.playerItem.asset.duration {
@@ -724,7 +728,8 @@ extension LightboxController: HeaderViewDelegate {
         self.initialImages.remove(at: prevIndex)
         self.pageViews.remove(at: prevIndex).removeFromSuperview()
         
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) { [weak self]  in
+            guard let self = self else { return }
             self.configureLayout(self.view.bounds.size)
             self.currentPage = Int(self.scrollView.contentOffset.x / self.view.bounds.width)
             deleteButton.isEnabled = true
@@ -776,8 +781,8 @@ extension LightboxController: FooterViewDelegate {
         if let videoUrl = images[currentPage].videoURL {
             
             saveButton.isUserInteractionEnabled = false
-            PhotoLibraryManager.saveVideo(from: videoUrl) { [weak self] success, error in
-                DispatchQueue.main.async {
+            PhotoLibraryManager.saveVideo(from: videoUrl) { [weak self]  success, error in
+                DispatchQueue.main.async { [weak self] in
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: videoUrl, result: (success, error))
                     
@@ -792,7 +797,7 @@ extension LightboxController: FooterViewDelegate {
             
             saveButton.isUserInteractionEnabled = false
             PhotoLibraryManager.saveImage(from: imageUrl) { [weak self] success, error in
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: imageUrl, result: (success, error))
                     if success {
@@ -806,7 +811,7 @@ extension LightboxController: FooterViewDelegate {
             
             saveButton.isUserInteractionEnabled = false
             PhotoLibraryManager.saveImage(image) { [weak self] success, error in
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: nil, result: (success, error))
                     if success {
