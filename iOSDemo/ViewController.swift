@@ -53,6 +53,9 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: LightboxPreloadDelegate {
+    func lightboxControllerUpdated(_ controller: LightboxController?) {
+    }
+    
     func lightboxControllerWillReachRightEnd(_ controller: LightboxController?) {
         print("lightboxControllerWillReachRightEnd")
         controller?.appendNewImages(images)

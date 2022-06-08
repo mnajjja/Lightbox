@@ -66,19 +66,11 @@ open class FooterView: UIView {
     
     open fileprivate(set) lazy var playButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
-        button.frame.size = CGSize(width: 20, height: 20)
+        button.frame.size = CGSize(width: 20, height: 22)
         
-        var playButtonImage = AssetManager.image("lightbox_play")
-        var pauseButtonImage = AssetManager.image("lightbox_play")
-        
-        // Note by Elvis Nuñez on Mon 22 Jun 08:06
-        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
-        // under iOS 13 so using SPM can work without problems.
-        if #available(iOS 13.0, *) {
-            playButtonImage = UIImage(systemName: "play.fill")
-            pauseButtonImage = UIImage(systemName: "pause.fill")
-        }
-        
+        var playButtonImage = AssetManager.image("play")
+        var pauseButtonImage = AssetManager.image("pause")
+
         button.setBackgroundImage(playButtonImage, for: .selected)
         button.setBackgroundImage(pauseButtonImage, for: .normal)
         button.isSelected = false
@@ -91,17 +83,10 @@ open class FooterView: UIView {
     
     open fileprivate(set) lazy var goForwardButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
-        button.frame.size = CGSize(width: 20, height: 20)
+        button.frame.size = CGSize(width: 18, height: 20)
         
-        var goforwardButtonImage = AssetManager.image("gobackward")
-        
-        // Note by Elvis Nuñez on Mon 22 Jun 08:06
-        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
-        // under iOS 13 so using SPM can work without problems.
-        if #available(iOS 13.0, *) {
-            goforwardButtonImage = UIImage(systemName: "goforward.15")
-        }
-        
+        var goforwardButtonImage = AssetManager.image("forward")
+
         button.setBackgroundImage(goforwardButtonImage, for: UIControl.State())
         button.addTarget(self, action: #selector(goForwardButtonDidTap(_:)), for: .touchUpInside)
         button.tintColor = .white
@@ -111,17 +96,10 @@ open class FooterView: UIView {
     
     open fileprivate(set) lazy var goBackButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
-        button.frame.size = CGSize(width: 20, height: 20)
+        button.frame.size = CGSize(width: 18, height: 20)
 
-        var gobackwardButtonImage = AssetManager.image("gobackward")
-        
-        // Note by Elvis Nuñez on Mon 22 Jun 08:06
-        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
-        // under iOS 13 so using SPM can work without problems.
-        if #available(iOS 13.0, *) {
-            gobackwardButtonImage = UIImage(systemName: "gobackward.15")
-        }
-        
+        var gobackwardButtonImage = AssetManager.image("back")
+
         button.setBackgroundImage(gobackwardButtonImage, for: UIControl.State())
         button.addTarget(self, action: #selector(goBackButtonDidTap(_:)), for: .touchUpInside)
         button.tintColor = .white
@@ -136,14 +114,6 @@ open class FooterView: UIView {
         
         var isNotMutedButtonImage = AssetManager.image("unmute")
         var isMutedButtonImage = AssetManager.image("mute")
-        
-        // Note by Elvis Nuñez on Mon 22 Jun 08:06
-        // When using SPM you might find that assets are note included. This is a workaround to provide default assets
-        // under iOS 13 so using SPM can work without problems.
-        if #available(iOS 13.0, *) {
-          //  isMutedButtonImage = UIImage(systemName: "speaker.slash")
-            isNotMutedButtonImage = UIImage(systemName: "speaker.3")
-        }
         
         button.setBackgroundImage(isNotMutedButtonImage, for: .normal)
         button.setBackgroundImage(isMutedButtonImage, for: .selected)
