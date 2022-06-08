@@ -369,8 +369,8 @@ open class LightboxController: UIViewController {
         /// Update Layout only when scrollViewDidEndDragging
         ///
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
-            guard let self = self else { return }
-            if !self.scrollView.isDragging {
+            guard let strongSelf = self else { return }
+            if !strongSelf.scrollView.isDragging {
                 DispatchQueue.main.async { [weak self]  in
                     guard let self = self else { return }
                     timer.invalidate()
@@ -549,11 +549,6 @@ open class LightboxController: UIViewController {
         playerItem = AVPlayerItem(asset: asset,
                                   automaticallyLoadedAssetKeys: requiredAssetKeys)
         
-        playerItem?.addObserver(self,
-                                forKeyPath: #keyPath(AVPlayerItem.status),
-                                options: [.old, .new],
-                                context: &playerItemContext)
-        
         avPlayer = AVPlayer(playerItem: playerItem)
         
         avPlayer?.isMuted = false
@@ -570,9 +565,12 @@ open class LightboxController: UIViewController {
         avPlayer?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: .main) { [weak self] _ in
             if self?.avPlayer?.currentItem?.status == .readyToPlay, let time = self?.avPlayer?.currentTime() {
                 DispatchQueue.main.async { [weak self]  in
+                    if self?.footerView.playerContainerView.isHidden ?? false {
+                        self?.showPlayerView()
+                    }
                     self?.footerView.playbackSlider.value = Float(time.seconds)
                     self?.footerView.upateLeftTimeLabel(time.stringTime)
-                    if let duration = self?.playerItem.asset.duration {
+                    if let duration = self?.playerItem?.asset.duration {
                         let timeToEnd = (time - duration).stringTime
                         self?.footerView.upateRightTimeLabel(timeToEnd)
                     }
@@ -588,43 +586,20 @@ open class LightboxController: UIViewController {
         playerItemUrl = nil
     }
     
-    open override func observeValue(forKeyPath keyPath: String?,
-                                    of object: Any?,
-                                    change: [NSKeyValueChangeKey : Any]?,
-                                    context: UnsafeMutableRawPointer?) {
-        
-        // Only handle observations for the playerItemContext
-        guard context == &playerItemContext else {
-            super.observeValue(forKeyPath: keyPath,
-                               of: object,
-                               change: change,
-                               context: context)
-            return
-        }
-        
-        if keyPath == #keyPath(AVPlayerItem.status) {
-            let status: AVPlayerItem.Status
-            if let statusNumber = change?[.newKey] as? NSNumber {
-                status = AVPlayerItem.Status(rawValue: statusNumber.intValue)!
-            } else {
-                status = .unknown
-            }
-            
-            playerStatus = status
-            UIView.animate(withDuration: 0.4) {  [weak self] in
-                guard let self = self else { return }
-                if status == .readyToPlay, self.pageViews[self.currentPage].image.hasVideoContent {
-                    self.pageViews[self.currentPage].loadingIndicator.alpha = 0
-                    let duration : CMTime = self.playerItem.asset.duration
-                    let seconds : Float64 = CMTimeGetSeconds(duration)
-                    self.footerView.upatePlaybackSlider(Float(seconds))
-                    self.footerView.setPlayButtonSelected(false)
-                    self.footerView.upateLeftTimeLabel("00:00")
-                    self.footerView.upateRightTimeLabel("00:00")
-                    self.footerView.imageContainerView.isHidden = true
-                    self.footerView.playerContainerView.isHidden = false
-                    self.footerView.setSkipButtonsHidden(seconds <= 15.0)
-                }
+    func showPlayerView() {
+        UIView.animate(withDuration: 0.4) {  [weak self] in
+            guard let self = self else { return }
+            if self.pageViews[self.currentPage].image.hasVideoContent {
+                self.pageViews[self.currentPage].loadingIndicator.alpha = 0
+                let duration : CMTime = self.playerItem?.asset.duration ?? CMTimeMake(value: 1, timescale: 10)
+                let seconds : Float64 = CMTimeGetSeconds(duration)
+                self.footerView.upatePlaybackSlider(Float(seconds))
+                self.footerView.setPlayButtonSelected(false)
+                self.footerView.upateLeftTimeLabel("00:00")
+                self.footerView.upateRightTimeLabel("00:00")
+                self.footerView.imageContainerView.isHidden = true
+                self.footerView.playerContainerView.isHidden = false
+                self.footerView.setSkipButtonsHidden(seconds <= 15.0)
             }
         }
     }
@@ -781,7 +756,7 @@ extension LightboxController: FooterViewDelegate {
         if let videoUrl = images[currentPage].videoURL {
             
             saveButton.isUserInteractionEnabled = false
-            PhotoLibraryManager.saveVideo(from: videoUrl) { [weak self]  success, error in
+            PhotoLibraryManager.saveVideo(from: videoUrl) { success, error in
                 DispatchQueue.main.async { [weak self] in
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: videoUrl, result: (success, error))
@@ -796,7 +771,7 @@ extension LightboxController: FooterViewDelegate {
         } else if let imageUrl = images[currentPage].imageURL {
             
             saveButton.isUserInteractionEnabled = false
-            PhotoLibraryManager.saveImage(from: imageUrl) { [weak self] success, error in
+            PhotoLibraryManager.saveImage(from: imageUrl) { success, error in
                 DispatchQueue.main.async { [weak self] in
                     saveButton.isUserInteractionEnabled = true
                     self?.mediaSaveDelegate?.lightboxControllerSaveMedia(self, from: imageUrl, result: (success, error))
