@@ -29,8 +29,6 @@ public protocol LightboxPreloadDelegate: AnyObject {
     func lightboxControllerUpdated(_ controller: LightboxController?)
 }
 
-
-
 open class LightboxController: UIViewController {
     
     // MARK: - Internal views
@@ -127,8 +125,8 @@ open class LightboxController: UIViewController {
             pageDelegate?.lightboxController(self, didMoveToPage: currentPage)
             
             if let image = pageViews[currentPage].imageView.image, dynamicBackground {
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.125) {
-                    self.loadDynamicBackground(image)
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.125) { [weak self] in
+                    self?.loadDynamicBackground(image)
                 }
             }
 
@@ -299,8 +297,8 @@ open class LightboxController: UIViewController {
     override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         
-        coordinator.animate(alongsideTransition: { _ in
-            self.configureLayout(size)
+        coordinator.animate(alongsideTransition: { [weak self] _ in
+            self?.configureLayout(size)
         }, completion: nil)
     }
     
@@ -367,7 +365,8 @@ open class LightboxController: UIViewController {
 
         /// Update Layout only when scrollViewDidEndDragging
         ///
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
+            guard let self = self else { return }
             if !self.scrollView.isDragging {
                 DispatchQueue.main.async {
                     timer.invalidate()
@@ -486,9 +485,9 @@ open class LightboxController: UIViewController {
         let alpha: CGFloat = visible ? 1.0 : 0.0
         
         
-        UIView.animate(withDuration: duration, delay: delay, options: [], animations: {
-            self.headerView.alpha = alpha
-            self.footerView.alpha = alpha
+        UIView.animate(withDuration: duration, delay: delay, options: [], animations: { [weak self] in
+            self?.headerView.alpha = alpha
+            self?.footerView.alpha = alpha
         }, completion: nil)
     }
     
@@ -517,7 +516,6 @@ open class LightboxController: UIViewController {
     }
     
     private func removeObservers() {
-        playerItem?.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.status))
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -560,14 +558,13 @@ open class LightboxController: UIViewController {
         pageViews[currentPage].loadingIndicator.alpha = 1
         footerView.muteButton.isSelected = false
         
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer.currentItem, queue: nil) { [weak self] _ in
+        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer?.currentItem, queue: nil) { [weak self] _ in
             self?.avPlayer?.seek(to: CMTime.zero)
             self?.avPlayer?.play()
         }
         
         avPlayer?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: .main) { [weak self] _ in
             if self?.avPlayer?.currentItem?.status == .readyToPlay, let time = self?.avPlayer?.currentTime() {
-                
                 DispatchQueue.main.async {
                     self?.footerView.playbackSlider.value = Float(time.seconds)
                     self?.footerView.upateLeftTimeLabel(time.stringTime)
@@ -610,7 +607,8 @@ open class LightboxController: UIViewController {
             }
             
             playerStatus = status
-            UIView.animate(withDuration: 0.4) {
+            UIView.animate(withDuration: 0.4) {  [weak self] in
+                guard let self = self else { return }
                 if status == .readyToPlay, self.pageViews[self.currentPage].image.hasVideoContent {
                     self.pageViews[self.currentPage].loadingIndicator.alpha = 0
                     let duration : CMTime = self.playerItem.asset.duration
@@ -632,8 +630,8 @@ open class LightboxController: UIViewController {
     func showMessage(text: String) {
         messageView.alpha = 1
         messageView.text = text
-        UIView.animate(withDuration: 0.75, delay: 0.75, options: .curveEaseIn, animations: {
-            self.messageView.alpha = 0
+        UIView.animate(withDuration: 0.75, delay: 0.75, options: .curveEaseIn, animations: {  [weak self] in
+            self?.messageView.alpha = 0
         })
     }
 }
@@ -839,7 +837,8 @@ extension LightboxController: FooterViewDelegate {
     
     
     public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
-        UIView.animate(withDuration: 0.25, animations: {
+        UIView.animate(withDuration: 0.25, animations: {  [weak self] in
+            guard let self = self else { return }
             self.overlayView.alpha = expanded ? 1.0 : 0.0
             self.headerView.deleteButton.alpha = expanded ? 0.0 : 1.0
         })
