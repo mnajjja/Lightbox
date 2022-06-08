@@ -26,6 +26,7 @@ public protocol LightboxPreloadDelegate: AnyObject {
     
     func lightboxControllerWillReachRightEnd(_ controller: LightboxController?)
     func lightboxControllerWillReachLeftEnd(_ controller: LightboxController?)
+    func lightboxControllerUpdated(_ controller: LightboxController?)
 }
 
 
@@ -131,18 +132,18 @@ open class LightboxController: UIViewController {
                 }
             }
 
-            if oldValue != currentPage {
+            if oldValue != currentPage, playerItemUrl != pageViews[currentPage].image.videoURL {
+                // Stop Playing Video for previous page
                 self.killPlayer()
                 self.footerView.playerContainerView.isHidden = true
                 self.footerView.imageContainerView.isHidden = false
+                
+                // Start Playing Video for current page
+                if let videoUrl = pageViews[currentPage].image.videoURL {
+                    self.configurePlayer(videoUrl)
+                }
             }
             
-            // Start Playing Video for currentPage
-            if let videoUrl = pageViews[currentPage].image.videoURL {
-                guard oldValue != currentPage else { return }
-                self.configurePlayer(videoUrl)
-
-            }
             if oldValue < currentPage, (pageViews.count - currentPage) <= LightboxConfig.itemsToEnd {
                 prelodMediaDelegate?.lightboxControllerWillReachRightEnd(self)
             } else if oldValue > currentPage || isReachedStartIndex, (currentPage - LightboxConfig.itemsToEnd) <= 0 {
@@ -198,6 +199,7 @@ open class LightboxController: UIViewController {
     private var avPlayer : AVPlayer!
     private var asset: AVAsset!
     private var playerItem: AVPlayerItem!
+    private var playerItemUrl: URL!
     private var playerItemContext = 0
     private var playerStatus: AVPlayerItem.Status!
     private let requiredAssetKeys = ["playable", "hasProtectedContent"]
@@ -219,7 +221,6 @@ open class LightboxController: UIViewController {
     deinit {
         removeObservers()
     }
-    
     
     // MARK: - View lifecycle
     
@@ -315,7 +316,6 @@ open class LightboxController: UIViewController {
     /// Add new images to Left
     ///
     public func insertNewImages(_ newImages: [LightboxImage]) {
-        initialImages = newImages + initialImages
         configureNewPages(newImages)
     }
     
@@ -352,26 +352,28 @@ open class LightboxController: UIViewController {
         }
         
         configureLayout(view.bounds.size, setContentOffset: setContentOffset)
+        self.prelodMediaDelegate?.lightboxControllerUpdated(self)
     }
     
     func configureNewPages(_ images: [LightboxImage]) {
+        initialImages = images + initialImages
+        
         for i in 0..<images.count {
             let pageView = PageView(image: LightboxConfig.preload > i ? images[i] : LightboxImageStub())
             pageView.pageViewDelegate = self
-            
             scrollView.insertSubview(pageView, at: 0)
             pageViews.insert(pageView, at: 0)
         }
-        
-        self.currentPage += images.count
-        
+
         /// Update Layout only when scrollViewDidEndDragging
         ///
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
             if !self.scrollView.isDragging {
                 DispatchQueue.main.async {
-                    self.updateLayout(self.view.bounds.size)
                     timer.invalidate()
+                    self.currentPage += images.count
+                    self.updateLayout(self.view.bounds.size)
+                    self.prelodMediaDelegate?.lightboxControllerUpdated(self)
                 }
             }
         }
@@ -541,6 +543,7 @@ open class LightboxController: UIViewController {
     
     open func configurePlayer(_ url: URL) {
         asset = AVAsset(url: url)
+        playerItemUrl = url
         playerItem = AVPlayerItem(asset: asset,
                                   automaticallyLoadedAssetKeys: requiredAssetKeys)
         
@@ -581,6 +584,7 @@ open class LightboxController: UIViewController {
     func killPlayer() {
         avPlayer?.pause()
         avPlayer = nil
+        playerItemUrl = nil
     }
     
     open override func observeValue(forKeyPath keyPath: String?,
