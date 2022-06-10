@@ -111,8 +111,21 @@ open class LightboxController: UIViewController {
     open fileprivate(set) var currentPage = 0 {
         didSet {
             let isReachedStartIndex = currentPage == -1
-
             currentPage = min(numberOfPages - 1, max(0, currentPage))
+            
+            if oldValue != currentPage, playerItemUrl != pageViews[currentPage].image.videoURL {
+                // Stop Playing Video for previous page
+                self.killPlayer()
+                
+                // Start Playing Video for current page
+                if let videoUrl = pageViews[currentPage].image.videoURL {
+                    self.configurePlayer(videoUrl)
+                } else {
+                    self.footerView.playerContainerView.isHidden = true
+                    self.footerView.imageContainerView.isHidden = false
+                }
+            }
+            
             footerView.updatePage(currentPage + 1, numberOfPages)
             let title = pageViews[currentPage].image.title
             let description = pageViews[currentPage].image.description
@@ -127,18 +140,6 @@ open class LightboxController: UIViewController {
             if let image = pageViews[currentPage].imageView.image, dynamicBackground {
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.125) { [weak self] in
                     self?.loadDynamicBackground(image)
-                }
-            }
-
-            if oldValue != currentPage, playerItemUrl != pageViews[currentPage].image.videoURL {
-                // Stop Playing Video for previous page
-                self.killPlayer()
-                self.footerView.playerContainerView.isHidden = true
-                self.footerView.imageContainerView.isHidden = false
-                
-                // Start Playing Video for current page
-                if let videoUrl = pageViews[currentPage].image.videoURL {
-                    self.configurePlayer(videoUrl)
                 }
             }
             
@@ -377,9 +378,10 @@ open class LightboxController: UIViewController {
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
             guard let strongSelf = self else { return }
             if !strongSelf.scrollView.isDragging {
+                timer.invalidate()
+
                 DispatchQueue.main.async { [weak self]  in
                     guard let self = self else { return }
-                    timer.invalidate()
                     
                     self.initialImages = images + self.initialImages
                     self.pageViews = newPageViews + self.pageViews
