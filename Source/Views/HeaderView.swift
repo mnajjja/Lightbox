@@ -22,11 +22,11 @@ open class HeaderView: UIView {
         button.addTarget(self, action: #selector(closeButtonDidPress(_:)),
                          for: .touchUpInside)
         
-        if let image = LightboxConfig.CloseButton.image {
-            let tintedImage = image.withRenderingMode(.alwaysTemplate)
-            button.setImage(tintedImage, for: UIControl.State())
-            button.tintColor = .white
-        }
+//        if let image = LightboxConfig.CloseButton.image {
+//            let tintedImage = image.withRenderingMode(.alwaysTemplate)
+//            button.setImage(tintedImage, for: UIControl.State())
+//            button.tintColor = .white
+//        }
         
         button.isHidden = !LightboxConfig.CloseButton.enabled
         

@@ -49,8 +49,8 @@ public class LightboxConfig {
     public struct CloseButton {
         public static var enabled = true
         public static var size = CGSize(width: 50, height: 18)
-        public static var text = NSLocalizedString("Back", comment: "")
-        public static var image = AssetManager.image("backArrow")
+        public static var text = NSLocalizedString("Close", comment: "")
+        //public static var image = AssetManager.image("backArrow")
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 14),

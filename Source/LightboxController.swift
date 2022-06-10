@@ -550,12 +550,10 @@ open class LightboxController: UIViewController {
                                   automaticallyLoadedAssetKeys: requiredAssetKeys)
         
         avPlayer = AVPlayer(playerItem: playerItem)
-        
-        avPlayer?.isMuted = false
+        avPlayer?.isMuted = footerView.muteButton.isSelected
         avPlayer?.play()
         pageViews[currentPage].playerView.playerLayer.player = avPlayer
         pageViews[currentPage].loadingIndicator.alpha = 1
-        footerView.muteButton.isSelected = false
         
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: self.avPlayer?.currentItem, queue: nil) { [weak self] _ in
             self?.avPlayer?.seek(to: CMTime.zero)
