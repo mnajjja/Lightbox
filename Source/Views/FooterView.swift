@@ -31,9 +31,11 @@ open class FooterView: UIView {
     open fileprivate(set) lazy var playbackSlider: UISlider = { [unowned self] in
         let slider = UISlider(frame: CGRect.zero)
         slider.minimumValue = 0
-        let circleImage = makeCircleWith(size: CGSize(width: 10, height: 10), backgroundColor: .white)
-        slider.setThumbImage(circleImage, for: .normal)
-        slider.setThumbImage(circleImage, for: .highlighted)
+        let smallCircleImage = makeCircleWith(size: CGSize(width: 10, height: 10), backgroundColor: .white)
+        let largeCircleImage = makeCircleWith(size: CGSize(width: 20, height: 20), backgroundColor: .white)
+
+        slider.setThumbImage(smallCircleImage, for: .normal)
+        slider.setThumbImage(largeCircleImage, for: .highlighted)
         slider.isContinuous = true
         slider.tintColor = .white
         slider.maximumTrackTintColor = UIColor(hex: "787880").withAlphaComponent(0.32)
