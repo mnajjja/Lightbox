@@ -363,15 +363,15 @@ open class LightboxController: UIViewController {
     }
     
     func configureNewPages(_ images: [LightboxImage]) {
-        initialImages = images + initialImages
+        var newPageViews = [PageView]()
         
-        for i in 0..<images.count {
-            let pageView = PageView(image: LightboxConfig.preload > i ? images[i] : LightboxImageStub())
+        images.forEach { image in
+            let pageView = PageView(image: LightboxImageStub())
             pageView.pageViewDelegate = self
+            newPageViews.append(pageView)
             scrollView.insertSubview(pageView, at: 0)
-            pageViews.insert(pageView, at: 0)
         }
-
+        
         /// Update Layout only when scrollViewDidEndDragging
         ///
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
@@ -380,6 +380,9 @@ open class LightboxController: UIViewController {
                 DispatchQueue.main.async { [weak self]  in
                     guard let self = self else { return }
                     timer.invalidate()
+                    
+                    self.initialImages = images + self.initialImages
+                    self.pageViews = newPageViews + self.pageViews
                     self.currentPage += images.count
                     self.updateLayout(self.view.bounds.size)
                     self.prelodMediaDelegate?.lightboxControllerUpdated(self)
