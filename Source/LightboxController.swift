@@ -322,18 +322,24 @@ open class LightboxController: UIViewController {
     
     /// Update LightboxImage Video Url
     ///
-    public func updateLightboxVideoUrl(page: Int, with url: URL?) {
-        guard page < scrollView.subviews.count else { return }
-        (scrollView.subviews[page] as? PageView)?.image = LightboxImage(videoURL: url)
-        (scrollView.subviews[page] as? PageView)?.configure()
+    public func updateLightboxVideoUrl(_ oldUrl: URL?, with newUrl: URL?) {
+        scrollView.subviews.forEach { subview in
+            if (subview as? PageView)?.image.videoURL == oldUrl {
+                (subview as? PageView)?.image = LightboxImage(videoURL: newUrl)
+                (subview as? PageView)?.configure()
+            }
+        }
     }
     
     /// Update LightboxImage Image Url
     ///
-    public func updateLightboxImageUrl(page: Int, with url: URL?) {
-        guard page < scrollView.subviews.count else { return }
-        (scrollView.subviews[page] as? PageView)?.image = LightboxImage(imageURL: url)
-        (scrollView.subviews[page] as? PageView)?.configure()
+    public func updateLightboxImageUrl(_ oldUrl: URL?, with newUrl: URL?) {
+        scrollView.subviews.forEach { subview in
+            if (subview as? PageView)?.image.imageURL == oldUrl {
+                (subview as? PageView)?.image = LightboxImage(imageURL: newUrl)
+                (subview as? PageView)?.configure()
+            }
+        }
     }
     
     // MARK: - Configuration
