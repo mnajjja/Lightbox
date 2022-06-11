@@ -204,7 +204,7 @@ open class LightboxController: UIViewController {
     private var playerStatus: AVPlayerItem.Status!
     private let requiredAssetKeys = ["playable", "hasProtectedContent"]
     private var pausedForBackgrounding = false
-    private var playerPaused = false
+    private var isPlaybackSliderTouchBegan = false
 
     
     // MARK: - Initializers
@@ -579,7 +579,9 @@ open class LightboxController: UIViewController {
                     if self?.footerView.playerContainerView.isHidden ?? false {
                         self?.showPlayerView()
                     }
-                    self?.footerView.playbackSlider.value = Float(time.seconds)
+                    if !(self?.isPlaybackSliderTouchBegan ?? false) {
+                        self?.footerView.playbackSlider.value = Float(time.seconds)
+                    }
                     self?.footerView.upateLeftTimeLabel(time.stringTime)
                     if let duration = self?.playerItem?.asset.duration {
                         let timeToEnd = (time - duration).stringTime
@@ -824,24 +826,18 @@ extension LightboxController: FooterViewDelegate {
     }
     
     public func playbackSliderTouchBegan(_ footerView: FooterView, playbackSlider: UISlider) {
-        if avPlayer?.rate != 0 {
-            playerPaused = true
-            avPlayer?.pause()
-        }
+        isPlaybackSliderTouchBegan = true
     }
 
     public func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider) {
     }
     
     public func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider) {
-        if playerPaused {
-            playerPaused = false
-            
-            let seconds : Int64 = Int64(playbackSlider.value)
-            let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
-            avPlayer?.seek(to: targetTime)
-            avPlayer?.play()
-        }
+        isPlaybackSliderTouchBegan = false
+        
+        let seconds : Int64 = Int64(playbackSlider.value)
+        let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
+        avPlayer?.seek(to: targetTime)
     }
     
     public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
