@@ -117,12 +117,12 @@ open class LightboxController: UIViewController {
             if oldValue != currentPage, playerItemUrl != pageViews[currentPage].image.videoURL {
                 // Stop Playing Video for previous page
                 self.killPlayer()
-                
+                self.footerView.playerContainerView.isHidden = true
+
                 // Start Playing Video for current page
                 if let videoUrl = pageViews[currentPage].image.videoURL {
                     self.configurePlayer(videoUrl)
                 } else {
-                    self.footerView.playerContainerView.isHidden = true
                     self.footerView.imageContainerView.isHidden = false
                 }
             }
