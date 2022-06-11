@@ -254,7 +254,7 @@ open class FooterView: UIView {
     
     
     private func makeCircleWith(size: CGSize, backgroundColor: UIColor) -> UIImage? {
-        let fullSize = CGSize(width: 30, height: 30)
+        let fullSize = CGSize(width: 50, height: 30)
         UIGraphicsBeginImageContextWithOptions(fullSize, false, 0.0)
         let context = UIGraphicsGetCurrentContext()
         context?.setFillColor(backgroundColor.cgColor)
