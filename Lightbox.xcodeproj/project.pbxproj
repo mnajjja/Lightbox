@@ -20,6 +20,7 @@
 		9ACBD905283E3B3700B4D493 /* PhotoLibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */; };
 		9ACBD907283E883700B4D493 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD906283E883700B4D493 /* Date+Extensions.swift */; };
 		9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */; };
+		A8F69949285532AE00CDFC55 /* PlaybackSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F69948285532AE00CDFC55 /* PlaybackSlider.swift */; };
 		D22006741DFB4D9700E92898 /* Lightbox.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D22006731DFB4D9700E92898 /* Lightbox.bundle */; };
 		D2258CC4215CD035005A9A1C /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2258CC3215CD035005A9A1C /* Color+Extensions.swift */; };
 		D2D71BBC1D54DA77006AB907 /* AssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D71BBB1D54DA77006AB907 /* AssetManager.swift */; };
@@ -73,6 +74,7 @@
 		9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryManager.swift; sourceTree = "<group>"; };
 		9ACBD906283E883700B4D493 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		A8F69948285532AE00CDFC55 /* PlaybackSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackSlider.swift; sourceTree = "<group>"; };
 		D22006731DFB4D9700E92898 /* Lightbox.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Lightbox.bundle; sourceTree = "<group>"; };
 		D2258CC3215CD035005A9A1C /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
 		D2A58F5D1F7943A30064F14E /* Imaginary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Imaginary.framework; path = Carthage/Build/iOS/Imaginary.framework; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				D54DFCBB1C5AAAD600ADEA0E /* Views */,
 				D523B0B61C43AA8A001AD1EC /* LightboxConfig.swift */,
 				D523B0B71C43AA8A001AD1EC /* LightboxController.swift */,
+				A8F69948285532AE00CDFC55 /* PlaybackSlider.swift */,
 				D5026B3B1C5BF3FD003BC1A3 /* LightboxImage.swift */,
 				166E3BA820333E04006799C1 /* LightboxImageStub.swift */,
 				D2D71BBB1D54DA77006AB907 /* AssetManager.swift */,
@@ -342,6 +345,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */,
+				A8F69949285532AE00CDFC55 /* PlaybackSlider.swift in Sources */,
 				D56F15C81E0AB79800F128AF /* LoadingIndicator.swift in Sources */,
 				D54DFCBF1C5AAAD600ADEA0E /* PageView.swift in Sources */,
 				D573A2F71C5B5E55006053DD /* UIView+Gradient.swift in Sources */,
