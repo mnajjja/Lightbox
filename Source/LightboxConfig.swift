@@ -138,6 +138,7 @@ public class LightboxConfig {
     
     public struct Footer {
         public static var backgroundColor = UIColor.clear
+        public static var mutePlayer = false
     }
     
     public struct Header {

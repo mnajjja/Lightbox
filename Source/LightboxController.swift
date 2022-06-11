@@ -88,6 +88,7 @@ open class LightboxController: UIViewController {
     open fileprivate(set) lazy var footerView: FooterView = { [unowned self] in
         let view = FooterView()
         view.backgroundColor = LightboxConfig.Footer.backgroundColor
+        view.muteButton.isSelected = LightboxConfig.Footer.mutePlayer
         view.delegate = self
         view.playerContainerView.isHidden = true
         view.imageContainerView.isHidden = false

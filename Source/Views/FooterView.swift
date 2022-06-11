@@ -7,8 +7,8 @@ public protocol FooterViewDelegate: AnyObject {
     func playbackSliderTouchBegan(_ footerView: FooterView, playbackSlider: UISlider)
     func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider)
     func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider)
-
     func playButtonDidTap(_ footerView: FooterView, _ button: UIButton)
+    
     func saveButtonDidTap(_ headerView: FooterView, _ button: UIButton)
     func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton)
     func goBackButtonDidTap(_ headerView: FooterView, _ button: UIButton)
