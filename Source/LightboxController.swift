@@ -831,14 +831,15 @@ extension LightboxController: FooterViewDelegate {
     }
 
     public func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider) {
-        let seconds : Int64 = Int64(playbackSlider.value)
-        let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
-        avPlayer?.seek(to: targetTime)
     }
     
     public func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider) {
         if playerPaused {
             playerPaused = false
+            
+            let seconds : Int64 = Int64(playbackSlider.value)
+            let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
+            avPlayer?.seek(to: targetTime)
             avPlayer?.play()
         }
     }
