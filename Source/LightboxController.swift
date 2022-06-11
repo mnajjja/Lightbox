@@ -624,6 +624,15 @@ open class LightboxController: UIViewController {
             self?.messageView.alpha = 0
         })
     }
+    
+    // MARK: - Mute Player
+    
+    open func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
+        if let isMuted = avPlayer?.isMuted {
+            avPlayer?.isMuted = !isMuted
+            button.isSelected = !isMuted
+        }
+    }
 }
 
 // MARK: - UIScrollViewDelegate
@@ -752,13 +761,6 @@ extension LightboxController: FooterViewDelegate {
         if newTime < (CMTimeGetSeconds(duration) - 5) {
             let time2: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
             avPlayer?.seek(to: time2, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
-        }
-    }
-    
-    public func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
-        if let isMuted = avPlayer?.isMuted {
-            avPlayer?.isMuted = !isMuted
-            button.isSelected = !isMuted
         }
     }
     
