@@ -1,5 +1,11 @@
 import UIKit
 
+open class PlaybackSlider: UISlider {
+    open override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        return true
+    }
+}
+
 public protocol FooterViewDelegate: AnyObject {
     
     func footerView(_ footerView: FooterView, didExpand expanded: Bool)
@@ -31,9 +37,10 @@ open class FooterView: UIView {
         
         return view
     }()
+    
 
-    open fileprivate(set) lazy var playbackSlider: UISlider = { [unowned self] in
-        let slider = UISlider(frame: CGRect.zero)
+    open fileprivate(set) lazy var playbackSlider: PlaybackSlider = { [unowned self] in
+        let slider = PlaybackSlider(frame: CGRect.zero)
         slider.minimumValue = 0
         
         let smallCircleImage = makeCircleWith(size: CGSize(width: 10, height: 10), backgroundColor: .white)
@@ -254,14 +261,11 @@ open class FooterView: UIView {
     
     
     private func makeCircleWith(size: CGSize, backgroundColor: UIColor) -> UIImage? {
-        let fullSize = CGSize(width: 50, height: 30)
-        UIGraphicsBeginImageContextWithOptions(fullSize, false, 0.0)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         let context = UIGraphicsGetCurrentContext()
         context?.setFillColor(backgroundColor.cgColor)
         context?.setStrokeColor(UIColor.clear.cgColor)
-        let x = (fullSize.width - size.width)/2
-        let y = (fullSize.height - size.height)/2
-        let bounds = CGRect(origin: CGPoint(x: x, y: y), size: size)
+        let bounds = CGRect(origin: .zero, size: size)
         context?.addEllipse(in: bounds)
         context?.drawPath(using: .fill)
         let image = UIGraphicsGetImageFromCurrentImageContext()
