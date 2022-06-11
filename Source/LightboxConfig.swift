@@ -53,7 +53,7 @@ public class LightboxConfig {
         //public static var image = AssetManager.image("backArrow")
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 14),
+            .font: UIFont.boldSystemFont(ofSize: 16),
             .foregroundColor: UIColor.white.withAlphaComponent(0.7),
             .paragraphStyle: {
                 var style = NSMutableParagraphStyle()

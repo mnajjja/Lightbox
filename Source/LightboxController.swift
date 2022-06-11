@@ -203,6 +203,7 @@ open class LightboxController: UIViewController {
     private var playerStatus: AVPlayerItem.Status!
     private let requiredAssetKeys = ["playable", "hasProtectedContent"]
     private var pausedForBackgrounding = false
+    private var playerPaused = false
 
     
     // MARK: - Initializers
@@ -731,6 +732,7 @@ extension LightboxController: HeaderViewDelegate {
 // MARK: - FooterViewDelegate
 
 extension LightboxController: FooterViewDelegate {
+    
     public func goBackButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
         if let currentTime = avPlayer?.currentTime() {
             let playerCurrentTime = CMTimeGetSeconds(currentTime)
@@ -818,12 +820,25 @@ extension LightboxController: FooterViewDelegate {
         }
     }
     
+    public func playbackSliderTouchBegan(_ footerView: FooterView, playbackSlider: UISlider) {
+        if avPlayer?.rate != 0 {
+            playerPaused = true
+            avPlayer?.pause()
+        }
+    }
+
     public func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider) {
         let seconds : Int64 = Int64(playbackSlider.value)
         let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
         avPlayer?.seek(to: targetTime)
     }
     
+    public func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider) {
+        if playerPaused {
+            playerPaused = false
+            avPlayer?.play()
+        }
+    }
     
     public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
         UIView.animate(withDuration: 0.25, animations: {  [weak self] in

@@ -3,7 +3,11 @@ import UIKit
 public protocol FooterViewDelegate: AnyObject {
     
     func footerView(_ footerView: FooterView, didExpand expanded: Bool)
+    
+    func playbackSliderTouchBegan(_ footerView: FooterView, playbackSlider: UISlider)
     func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider)
+    func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider)
+
     func playButtonDidTap(_ footerView: FooterView, _ button: UIButton)
     func saveButtonDidTap(_ headerView: FooterView, _ button: UIButton)
     func muteButtonDidTap(_ headerView: FooterView, _ button: UIButton)
@@ -31,6 +35,7 @@ open class FooterView: UIView {
     open fileprivate(set) lazy var playbackSlider: UISlider = { [unowned self] in
         let slider = UISlider(frame: CGRect.zero)
         slider.minimumValue = 0
+        
         let smallCircleImage = makeCircleWith(size: CGSize(width: 10, height: 10), backgroundColor: .white)
         let largeCircleImage = makeCircleWith(size: CGSize(width: 20, height: 20), backgroundColor: .white)
 
@@ -39,7 +44,7 @@ open class FooterView: UIView {
         slider.isContinuous = true
         slider.tintColor = .white
         slider.maximumTrackTintColor = UIColor(hex: "787880").withAlphaComponent(0.32)
-        slider.addTarget(self, action: #selector(self.playbackSliderValueChanged(_:)), for: .valueChanged)
+        slider.addTarget(self, action: #selector(onSliderValChanged(slider:event:)), for: .valueChanged)
         
         return slider
     }()
@@ -193,8 +198,19 @@ open class FooterView: UIView {
     
     // MARK: - Actions
     
-    @objc func playbackSliderValueChanged(_ playbackSlider: UISlider){
-        delegate?.playbackSliderValueChanged(self, playbackSlider: playbackSlider)
+    @objc func onSliderValChanged(slider: UISlider, event: UIEvent){
+        if let touchEvent = event.allTouches?.first {
+            switch touchEvent.phase {
+            case .began:
+                delegate?.playbackSliderTouchBegan(self, playbackSlider: playbackSlider)
+            case .moved:
+                delegate?.playbackSliderValueChanged(self, playbackSlider: playbackSlider)
+            case .ended:
+                delegate?.playbackSliderTouchEnded(self, playbackSlider: playbackSlider)
+            default:
+                break
+            }
+        }
     }
     
     @objc func playButtonTouched(_ button: UIButton) {
@@ -238,11 +254,14 @@ open class FooterView: UIView {
     
     
     private func makeCircleWith(size: CGSize, backgroundColor: UIColor) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        let fullSize = CGSize(width: 30, height: 30)
+        UIGraphicsBeginImageContextWithOptions(fullSize, false, 0.0)
         let context = UIGraphicsGetCurrentContext()
         context?.setFillColor(backgroundColor.cgColor)
         context?.setStrokeColor(UIColor.clear.cgColor)
-        let bounds = CGRect(origin: .zero, size: size)
+        let x = (fullSize.width - size.width)/2
+        let y = (fullSize.height - size.height)/2
+        let bounds = CGRect(origin: CGPoint(x: x, y: y), size: size)
         context?.addEllipse(in: bounds)
         context?.drawPath(using: .fill)
         let image = UIGraphicsGetImageFromCurrentImageContext()
