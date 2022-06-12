@@ -113,6 +113,16 @@ public class LightboxConfig {
         ]
     }
     
+    
+    public struct DescriptionLabel {
+        public static var enabled = true
+        public static var textColor = UIColor.white
+        public static var textAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 14),
+            .foregroundColor: UIColor.white
+        ]
+    }
+    
     public struct InfoLabel {
         public static var enabled = true
         public static var textColor = UIColor.white

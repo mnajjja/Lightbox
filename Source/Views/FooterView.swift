@@ -157,13 +157,24 @@ open class FooterView: UIView {
     }()
     
     open fileprivate(set) lazy var titleLabel: UILabel = { [unowned self] in
-        let label = InfoLabel(text: "")
+        let label = UILabel(frame: CGRect.zero)
         label.isHidden = !LightboxConfig.TitleLabel.enabled
         label.textColor = LightboxConfig.TitleLabel.textColor
         label.numberOfLines = 1
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
 
+        return label
+    }()
+    
+    open fileprivate(set) lazy var descriptionLabel: UILabel = { [unowned self] in
+        let label = UILabel(frame: CGRect.zero)
+        label.isHidden = !LightboxConfig.DescriptionLabel.enabled
+        label.textColor = LightboxConfig.DescriptionLabel.textColor
+        label.numberOfLines = 1
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 14)
+        
         return label
     }()
     
@@ -174,6 +185,7 @@ open class FooterView: UIView {
         label.numberOfLines = 1
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 14)
+        label.delegate = self
         
         return label
     }()
@@ -243,7 +255,7 @@ open class FooterView: UIView {
         _ = addGradientLayer(gradientColors)
         
         [playbackSlider, leftTimeLabel, rightTimeLabel, playButton, goBackButton, goForwardButton, muteButton].forEach { playerContainerView.addSubview($0) }
-        [titleLabel, infoLabel].forEach { imageContainerView.addSubview($0) }
+        [titleLabel, descriptionLabel].forEach { imageContainerView.addSubview($0) }
         [imageContainerView, playerContainerView, saveButton].forEach { addSubview($0) }
     }
     
@@ -300,7 +312,7 @@ open class FooterView: UIView {
     
     func updateText(title: String?, description: String?) {
         titleLabel.text = title
-        infoLabel.text = description
+        descriptionLabel.text = description
     }
     
     open override func layoutSubviews() {
@@ -390,7 +402,7 @@ open class FooterView: UIView {
                                   width: frame.width - 50 * 2,
                                   height: 20)
         
-        infoLabel.frame = CGRect(x: 50,
+        descriptionLabel.frame = CGRect(x: 50,
                                  y: titleLabel.frame.maxY + 5,
                                  width: frame.width - 50 * 2,
                                  height: 16)
