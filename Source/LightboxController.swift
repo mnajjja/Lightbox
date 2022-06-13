@@ -838,7 +838,7 @@ extension LightboxController: FooterViewDelegate {
         let playerCurrentTime = CMTimeGetSeconds(currentTime)
         let newTime = playerCurrentTime + 15
         
-        if newTime < (CMTimeGetSeconds(duration) - 15) {
+        if newTime < CMTimeGetSeconds(duration) {
             let time: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
             avPlayer?.seek(to: time, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
         }
