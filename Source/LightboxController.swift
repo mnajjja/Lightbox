@@ -109,33 +109,13 @@ open class LightboxController: UIViewController {
     
     open fileprivate(set) lazy var videoThumbnailView: UIImageView = { [unowned self] in
         let view = UIImageView(frame: CGRect.zero)
-        view.frame.size = CGSize(width: 100, height: 200)
         view.backgroundColor = .clear
         view.layer.cornerRadius = 8
-        view.layer.borderColor = UIColor.white.cgColor
-        view.layer.borderWidth = 1
+        view.clipsToBounds = true
+        view.contentMode = .scaleAspectFit
         
         return view
     }()
-    
-    func showVideoThumbnail(for playbackSlider: UISlider) {
-        videoThumbnailView.removeFromSuperview()
-        
-        
-        let trackRect = playbackSlider.trackRect(forBounds: playbackSlider.bounds)
-        let thumbRect = playbackSlider.thumbRect(forBounds: playbackSlider.bounds, trackRect: trackRect, value: playbackSlider.value)
-        
-        if let playbackSliderGlobalPoint = playbackSlider.superview?.convert(thumbRect.origin, to: nil) {
-            let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (videoThumbnailView.frame.width / 2))
-            let x = min(minX, playbackSlider.superview!.frame.width -  videoThumbnailView.frame.width)
-            let y = playbackSliderGlobalPoint.y - videoThumbnailView.frame.height - 10
-            
-            
-            let newPosition = CGPoint(x: x, y: y)
-            videoThumbnailView.frame.origin = newPosition
-            view.addSubview(videoThumbnailView)
-        }
-    }
     
     // MARK: - Properties
     
@@ -673,6 +653,55 @@ open class LightboxController: UIViewController {
             button.isSelected = !isMuted
         }
     }
+    
+    // MARK: - Video Thumbnail
+
+    private func showVideoThumbnail(for playbackSlider: UISlider) {
+        videoThumbnailView.image = nil
+
+        let trackRect = playbackSlider.trackRect(forBounds: playbackSlider.bounds)
+        let thumbRect = playbackSlider.thumbRect(forBounds: playbackSlider.bounds, trackRect: trackRect, value: playbackSlider.value)
+        
+        if let playbackSliderGlobalPoint = playbackSlider.superview?.convert(thumbRect.origin, to: nil) {
+
+            let imgGenerator: AVAssetImageGenerator = AVAssetImageGenerator(asset: asset)
+            imgGenerator.cancelAllCGImageGeneration()
+            imgGenerator.appliesPreferredTrackTransform = true
+            
+            let timeInSec = playbackSlider.value
+            let time = CMTime(seconds: Double(timeInSec), preferredTimescale: 1)
+            
+            imgGenerator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { [weak self] (_, image, _, _, error) in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    guard timeInSec == playbackSlider.value else { return }
+                    
+                    if let cgImage = image {
+                        let image = UIImage(cgImage: cgImage)
+                        self.videoThumbnailView.image = image
+                        
+                        if !self.view.subviews.contains(self.videoThumbnailView) {
+                            let ratio = image.size.height / image.size.width
+                            let isVertical = ratio > 1
+                            
+                            let width = isVertical ? (self.view.frame.width / 4) : (self.view.frame.width / 3)
+                            let height = width * ratio
+                            self.videoThumbnailView.frame.size = CGSize(width: width, height: height)
+
+                            self.view.addSubview(self.videoThumbnailView)
+                        }
+                        
+                        
+                        let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (self.videoThumbnailView.frame.width / 2))
+                        let x = min(minX, playbackSlider.superview!.frame.width -  self.videoThumbnailView.frame.width)
+                        let y = playbackSliderGlobalPoint.y - self.videoThumbnailView.frame.height - 10
+                        let newPosition = CGPoint(x: x, y: y)
+                        self.videoThumbnailView.frame.origin = newPosition
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - UIScrollViewDelegate
@@ -890,15 +919,3 @@ extension LightboxController: FooterViewDelegate {
         })
     }
 }
-
-/*
- let imgGenerator: AVAssetImageGenerator = AVAssetImageGenerator(asset: asset)
- imgGenerator.appliesPreferredTrackTransform = true
- imgGenerator.generateCGImagesAsynchronously(forTimes: [NSValue(time: CMTime.zero)]) { [weak self] (_, image, _, _, error) in
-     guard let self = self else { return }
-     if error == nil {
-         let image = UIImage(cgImage: image!)
-         self.viewModel.editMessage(messageId: messageId, message: videoData, thumb: image.sd_imageData(), fileSize: size, sizeOnDisk: sizeOnDisk)
-     }
- }
- */
