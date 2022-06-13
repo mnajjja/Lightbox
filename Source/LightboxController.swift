@@ -657,7 +657,7 @@ open class LightboxController: UIViewController {
     // MARK: - Video Thumbnail
 
     private func showVideoThumbnail(for playbackSlider: UISlider) {
-        videoThumbnailView.image = nil
+        // videoThumbnailView.image = nil
 
         let trackRect = playbackSlider.trackRect(forBounds: playbackSlider.bounds)
         let thumbRect = playbackSlider.thumbRect(forBounds: playbackSlider.bounds, trackRect: trackRect, value: playbackSlider.value)
@@ -670,6 +670,14 @@ open class LightboxController: UIViewController {
             
             let timeInSec = playbackSlider.value
             let time = CMTime(seconds: Double(timeInSec), preferredTimescale: 1)
+            
+            if view.subviews.contains(videoThumbnailView), let sliderContainer = playbackSlider.superview {
+                let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (videoThumbnailView.frame.width / 2))
+                let x = min(minX, sliderContainer.frame.width -  videoThumbnailView.frame.width)
+                let y = playbackSliderGlobalPoint.y - videoThumbnailView.frame.height - 10
+                let newPosition = CGPoint(x: x, y: y)
+                videoThumbnailView.frame.origin = newPosition
+            }
             
             imgGenerator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { [weak self] (_, image, _, _, error) in
                 guard let self = self else { return }
@@ -688,15 +696,16 @@ open class LightboxController: UIViewController {
                             let height = width * ratio
                             self.videoThumbnailView.frame.size = CGSize(width: width, height: height)
 
+                            if let sliderContainer = playbackSlider.superview {
+                                let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (self.videoThumbnailView.frame.width / 2))
+                                let x = min(minX, sliderContainer.frame.width -  self.videoThumbnailView.frame.width)
+                                let y = playbackSliderGlobalPoint.y - self.videoThumbnailView.frame.height - 10
+                                let newPosition = CGPoint(x: x, y: y)
+                                self.videoThumbnailView.frame.origin = newPosition
+                            }
+                            
                             self.view.addSubview(self.videoThumbnailView)
                         }
-                        
-                        
-                        let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (self.videoThumbnailView.frame.width / 2))
-                        let x = min(minX, playbackSlider.superview!.frame.width -  self.videoThumbnailView.frame.width)
-                        let y = playbackSliderGlobalPoint.y - self.videoThumbnailView.frame.height - 10
-                        let newPosition = CGPoint(x: x, y: y)
-                        self.videoThumbnailView.frame.origin = newPosition
                     }
                 }
             }
