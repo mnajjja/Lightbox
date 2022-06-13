@@ -599,11 +599,11 @@ open class LightboxController: UIViewController {
                     }
                     if !(self?.isPlaybackSliderTouchBegan ?? false) {
                         self?.footerView.playbackSlider.value = Float(time.seconds)
-                    }
-                    self?.footerView.upateLeftTimeLabel(time.stringTime)
-                    if let duration = self?.playerItem?.asset.duration {
-                        let timeToEnd = (time - duration).stringTime
-                        self?.footerView.upateRightTimeLabel(timeToEnd)
+                        self?.footerView.upateLeftTimeLabel(time.stringTime)
+                        if let duration = self?.playerItem?.asset.duration {
+                            let timeToEnd = (time - duration).stringTime
+                            self?.footerView.upateRightTimeLabel(timeToEnd)
+                        }
                     }
                 }
             }
@@ -911,6 +911,15 @@ extension LightboxController: FooterViewDelegate {
 
     public func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider) {
         showVideoThumbnail(for: playbackSlider)
+        
+        let timeInSec = playbackSlider.value
+        let time = CMTime(seconds: Double(timeInSec), preferredTimescale: 1)
+        
+        footerView.upateLeftTimeLabel(time.stringTime)
+        if let duration = playerItem?.asset.duration {
+            let timeToEnd = (time - duration).stringTime
+            footerView.upateRightTimeLabel(timeToEnd)
+        }
     }
     
     public func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider) {
