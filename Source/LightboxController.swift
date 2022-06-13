@@ -107,6 +107,36 @@ open class LightboxController: UIViewController {
         return view
     }()
     
+    open fileprivate(set) lazy var videoThumbnailView: UIImageView = { [unowned self] in
+        let view = UIImageView(frame: CGRect.zero)
+        view.frame.size = CGSize(width: 100, height: 200)
+        view.backgroundColor = .clear
+        view.layer.cornerRadius = 8
+        view.layer.borderColor = UIColor.white.cgColor
+        view.layer.borderWidth = 1
+        
+        return view
+    }()
+    
+    func showVideoThumbnail(for playbackSlider: UISlider) {
+        videoThumbnailView.removeFromSuperview()
+        
+        
+        let trackRect = playbackSlider.trackRect(forBounds: playbackSlider.bounds)
+        let thumbRect = playbackSlider.thumbRect(forBounds: playbackSlider.bounds, trackRect: trackRect, value: playbackSlider.value)
+        
+        if let playbackSliderGlobalPoint = playbackSlider.superview?.convert(thumbRect.origin, to: nil) {
+            let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (videoThumbnailView.frame.width / 2))
+            let x = min(minX, playbackSlider.superview!.frame.width -  videoThumbnailView.frame.width)
+            let y = playbackSliderGlobalPoint.y - videoThumbnailView.frame.height - 10
+            
+            
+            let newPosition = CGPoint(x: x, y: y)
+            videoThumbnailView.frame.origin = newPosition
+            view.addSubview(videoThumbnailView)
+        }
+    }
+    
     // MARK: - Properties
     
     open fileprivate(set) var currentPage = 0 {
@@ -835,9 +865,11 @@ extension LightboxController: FooterViewDelegate {
     
     public func playbackSliderTouchBegan(_ footerView: FooterView, playbackSlider: UISlider) {
         isPlaybackSliderTouchBegan = true
+        showVideoThumbnail(for: playbackSlider)
     }
 
     public func playbackSliderValueChanged(_ footerView: FooterView, playbackSlider: UISlider) {
+        showVideoThumbnail(for: playbackSlider)
     }
     
     public func playbackSliderTouchEnded(_ footerView: FooterView, playbackSlider: UISlider) {
@@ -846,6 +878,8 @@ extension LightboxController: FooterViewDelegate {
         let seconds : Int64 = Int64(playbackSlider.value)
         let targetTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
         avPlayer?.seek(to: targetTime)
+        
+        videoThumbnailView.removeFromSuperview()
     }
     
     public func footerView(_ footerView: FooterView, didExpand expanded: Bool) {
@@ -856,3 +890,15 @@ extension LightboxController: FooterViewDelegate {
         })
     }
 }
+
+/*
+ let imgGenerator: AVAssetImageGenerator = AVAssetImageGenerator(asset: asset)
+ imgGenerator.appliesPreferredTrackTransform = true
+ imgGenerator.generateCGImagesAsynchronously(forTimes: [NSValue(time: CMTime.zero)]) { [weak self] (_, image, _, _, error) in
+     guard let self = self else { return }
+     if error == nil {
+         let image = UIImage(cgImage: image!)
+         self.viewModel.editMessage(messageId: messageId, message: videoData, thumb: image.sd_imageData(), fileSize: size, sizeOnDisk: sizeOnDisk)
+     }
+ }
+ */

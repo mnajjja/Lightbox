@@ -17,10 +17,12 @@ open class PlaybackSlider: UISlider {
         /// Move Forward
         if newValue > self.value {
             newValue += (widthOfThumb / 2) / widthOfSlider * self.maximumValue
+            newValue = min(newValue, maximumValue)
         }
         /// Move Back
         else if newValue < self.value{
             newValue -= (widthOfThumb / 2) / widthOfSlider * self.maximumValue
+            newValue = max(0, newValue)
         }
         
         self.setValue(newValue, animated: true)

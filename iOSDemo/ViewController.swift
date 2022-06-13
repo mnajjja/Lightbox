@@ -6,14 +6,15 @@ class ViewController: UIViewController {
     var controller: LightboxController!
     
     let images = [
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4")),
         LightboxImage(title: "Bryan Nguyen", description: "yesterday at 18:28", image: UIImage(named: "photo2")!),
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4")),
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
         LightboxImage(title: "Bryan Nguyen", description: "yesterday at 19:08", image: UIImage(named: "photo2")!),
         LightboxImage(title: "Bryan Nguyen", description: "yesterday at 22:21", image: UIImage(named: "photo2")!),
         LightboxImage(imageURL: URL(string: "https://picsum.photos/200/300")),
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4")),
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"))
     ]
         
     lazy var showButton: UIButton = { [unowned self] in
