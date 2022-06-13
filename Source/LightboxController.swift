@@ -680,7 +680,8 @@ open class LightboxController: UIViewController {
             }
             
             imgGenerator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { [weak self] (_, image, _, _, error) in
-                guard let self = self else { return }
+                guard let self = self, self.isPlaybackSliderTouchBegan else { return }
+                
                 DispatchQueue.main.async {
                     guard timeInSec == playbackSlider.value else { return }
                     
@@ -698,13 +699,15 @@ open class LightboxController: UIViewController {
 
                             if let sliderContainer = playbackSlider.superview {
                                 let minX = max(0, playbackSliderGlobalPoint.x + (thumbRect.width) - (self.videoThumbnailView.frame.width / 2))
-                                let x = min(minX, sliderContainer.frame.width -  self.videoThumbnailView.frame.width)
+                                let x = min(minX, sliderContainer.frame.width - self.videoThumbnailView.frame.width)
                                 let y = playbackSliderGlobalPoint.y - self.videoThumbnailView.frame.height - 10
                                 let newPosition = CGPoint(x: x, y: y)
                                 self.videoThumbnailView.frame.origin = newPosition
                             }
                             
-                            self.view.addSubview(self.videoThumbnailView)
+                            if self.isPlaybackSliderTouchBegan {
+                                self.view.addSubview(self.videoThumbnailView)
+                            }
                         }
                     }
                 }
