@@ -247,9 +247,17 @@ open class LightboxController: UIViewController {
         
         goTo(initialPage, animated: false)
         
-        // Start Play Video for currentPage
-        if pageViews.count > 0, let videoUrl = pageViews[currentPage].image.videoURL {
-            configurePlayer(videoUrl)
+        if pageViews.count > 0 {
+            let currentView = pageViews[currentPage]
+            
+            // Start Play Video for video message type
+            if let videoUrl = currentView.image.videoURL {
+                configurePlayer(videoUrl)
+            } else {
+                let title = currentView.image.title
+                let description = currentView.image.description
+                footerView.updateText(title: title, description: description)
+            }
         }
     }
     
