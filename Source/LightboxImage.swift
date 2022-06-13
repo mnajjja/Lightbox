@@ -24,13 +24,13 @@ open class LightboxImage {
         self.videoURL = videoURL
     }
     
-    public init(imageURL: URL? = nil, image: UIImage? = nil, videoURL: URL? = nil) {
+    public init(videoURL: URL? = nil, imageURL: URL? = nil, image: UIImage? = nil) {
         self.imageURL = imageURL
         self.image = image
         self.videoURL = videoURL
     }
     
-    public init(image: UIImage? = nil, title: String? = nil, description: String? = nil, imageURL: URL? = nil) {
+    public init(imageURL: URL? = nil, title: String? = nil, description: String? = nil, image: UIImage? = nil) {
         self.image = image
         self.imageURL = imageURL
         self.title = title
