@@ -827,21 +827,20 @@ extension LightboxController: FooterViewDelegate {
     public func goBackButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
         if let currentTime = avPlayer?.currentTime() {
             let playerCurrentTime = CMTimeGetSeconds(currentTime)
-            var newTime = playerCurrentTime - 5
-            if newTime < 0 { newTime = 0 }
-            let time2: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
-            avPlayer?.seek(to: time2, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+            let newTime = max(0, playerCurrentTime - 15)
+            let time: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
+            avPlayer?.seek(to: time, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
         }
     }
     
     public func goForwardButtonDidTap(_ headerView: FooterView, _ button: UIButton) {
         guard let duration = avPlayer?.currentItem?.duration, let currentTime = avPlayer?.currentTime() else { return }
         let playerCurrentTime = CMTimeGetSeconds(currentTime)
-        let newTime = playerCurrentTime + 5
+        let newTime = playerCurrentTime + 15
         
-        if newTime < (CMTimeGetSeconds(duration) - 5) {
-            let time2: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
-            avPlayer?.seek(to: time2, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        if newTime < (CMTimeGetSeconds(duration) - 15) {
+            let time: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
+            avPlayer?.seek(to: time, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
         }
     }
     
