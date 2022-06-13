@@ -829,7 +829,7 @@ extension LightboxController: FooterViewDelegate {
             let playerCurrentTime = CMTimeGetSeconds(currentTime)
             let newTime = max(0, playerCurrentTime - 15)
             let time: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
-            avPlayer?.seek(to: time, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+            avPlayer?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
         }
     }
     
@@ -837,11 +837,18 @@ extension LightboxController: FooterViewDelegate {
         guard let duration = avPlayer?.currentItem?.duration, let currentTime = avPlayer?.currentTime() else { return }
         let playerCurrentTime = CMTimeGetSeconds(currentTime)
         let newTime = playerCurrentTime + 15
+        let time: CMTime!
         
         if newTime < CMTimeGetSeconds(duration) {
-            let time: CMTime = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
-            avPlayer?.seek(to: time, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+            time = CMTimeMake(value: Int64(newTime * 1000 as Float64), timescale: 1000)
+        } else {
+            time = .zero
+            avPlayer?.pause()
+            footerView.setPlayButtonSelected(true)
         }
+        
+        avPlayer?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+
     }
     
     public func saveButtonDidTap(_ headerView: FooterView, _ saveButton: UIButton) {
