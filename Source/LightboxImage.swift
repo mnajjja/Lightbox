@@ -25,9 +25,9 @@ open class LightboxImage {
     }
     
     public init(videoURL: URL? = nil, imageURL: URL? = nil, image: UIImage? = nil) {
+        self.videoURL = videoURL
         self.imageURL = imageURL
         self.image = image
-        self.videoURL = videoURL
     }
     
     public init(imageURL: URL? = nil, title: String? = nil, description: String? = nil, image: UIImage? = nil) {

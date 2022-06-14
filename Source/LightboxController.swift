@@ -575,6 +575,8 @@ open class LightboxController: UIViewController {
     // MARK: - Player
     
     open func configurePlayer(_ url: URL) {
+        showVideoThumbnail()
+        
         asset = AVAsset(url: url)
         playerItemUrl = url
         playerItem = AVPlayerItem(asset: asset,
@@ -593,10 +595,11 @@ open class LightboxController: UIViewController {
         
         avPlayer?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: .main) { [weak self] _ in
             if self?.avPlayer?.currentItem?.status == .readyToPlay, let time = self?.avPlayer?.currentTime() {
+                
                 DispatchQueue.main.async { [weak self]  in
-                    if self?.footerView.playerContainerView.isHidden ?? false {
-                        self?.showPlayerView()
-                    }
+                    if self?.footerView.playerContainerView.isHidden ?? false { self?.showPlayerView() }
+                    if (self?.avPlayer?.rate ?? 0) > 0 { self?.hideVideoThumbnail() }
+                    
                     if !(self?.isPlaybackSliderTouchBegan ?? false) {
                         self?.footerView.playbackSlider.value = Float(time.seconds)
                         self?.footerView.upateLeftTimeLabel(time.stringTime)
@@ -611,6 +614,15 @@ open class LightboxController: UIViewController {
     }
     
     
+    private func showVideoThumbnail() {
+        pageViews[currentPage].playerThumbnailView.isHidden = false
+        pageViews[currentPage].playerThumbnailView.sd_setImage(with: pageViews[currentPage].image.imageURL)
+    }
+    
+    private func hideVideoThumbnail() {
+        pageViews[currentPage].playerThumbnailView.isHidden = true
+    }
+    
     func killPlayer() {
         avPlayer?.pause()
         avPlayer = nil
@@ -618,7 +630,7 @@ open class LightboxController: UIViewController {
     }
     
     func showPlayerView() {
-        UIView.animate(withDuration: 0.4) {  [weak self] in
+        UIView.animate(withDuration: 0.1) {  [weak self] in
             guard let self = self else { return }
             if self.pageViews[self.currentPage].image.hasVideoContent {
                 self.pageViews[self.currentPage].loadingIndicator.alpha = 0

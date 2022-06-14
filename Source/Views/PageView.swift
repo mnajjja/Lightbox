@@ -28,6 +28,15 @@ class PageView: UIScrollView {
         
         return playerView
     }()
+    
+    lazy var playerThumbnailView: UIImageView = {
+        let thumbnailView = UIImageView()
+        thumbnailView.contentMode = .scaleAspectFit
+        thumbnailView.clipsToBounds = true
+        thumbnailView.backgroundColor = .clear
+        
+        return thumbnailView
+    }()
   
     lazy var loadingIndicator: UIView = LightboxConfig.makeLoadingIndicator()
     
@@ -81,6 +90,7 @@ class PageView: UIScrollView {
     func configureMediaView() {
         if self.image.hasVideoContent, !subviews.contains(playerView) {
             if subviews.contains(imageView) { imageView.removeFromSuperview() }
+            playerView.addSubview(playerThumbnailView)
             addSubview(playerView)
         } else if self.image.hasImageContent, !subviews.contains(imageView) {
             if subviews.contains(playerView) { playerView.removeFromSuperview() }
@@ -152,7 +162,6 @@ class PageView: UIScrollView {
         super.layoutSubviews()
         
         let center = image.hasVideoContent ? playerView.center : imageView.center
-
         loadingIndicator.center = center
     }
     
@@ -201,7 +210,11 @@ class PageView: UIScrollView {
     }
     
     private func centerMediaViews() {
-        if subviews.contains(playerView) { centerView(playerView) }
+        if subviews.contains(playerView) {
+            centerView(playerView)
+            centerView(playerThumbnailView)
+        }
+        
         if subviews.contains(imageView) { centerView(imageView) }
     }
 }
@@ -215,6 +228,7 @@ extension PageView: LayoutConfigurable {
     contentSize = frame.size
     imageView.frame = frame
     playerView.frame = frame
+    playerThumbnailView.frame = frame
     zoomScale = minimumZoomScale
 
     configureMediaView()

@@ -6,7 +6,7 @@ class ViewController: UIViewController {
     var controller: LightboxController!
     
     let images = [
-        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4")),
+        LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"), imageURL: URL(string: "https://picsum.photos/200/300")),
         LightboxImage(title: "Bryan Nguyen", description: "yesterday at 18:28", image: UIImage(named: "photo2")!),
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4")),
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
@@ -43,7 +43,7 @@ class ViewController: UIViewController {
     // MARK: - Action methods
     
     @objc func showLightbox() {
-        controller = LightboxController(images: images, startIndex: 3)
+        controller = LightboxController(images: images, startIndex: 0)
         controller.prelodMediaDelegate = self
         
         controller.modalPresentationStyle = .fullScreen
@@ -57,11 +57,9 @@ extension ViewController: LightboxPreloadDelegate {
     
     func lightboxControllerWillReachRightEnd(_ controller: LightboxController?) {
         print("lightboxControllerWillReachRightEnd")
-        controller?.appendNewImages(images)
     }
     
     func lightboxControllerWillReachLeftEnd(_ controller: LightboxController?) {
         print("lightboxControllerWillReachLeftEnd")
-        controller?.insertNewImages(images)
     }
 }
