@@ -92,7 +92,7 @@ class PageView: UIScrollView {
             if subviews.contains(imageView) { imageView.removeFromSuperview() }
             playerView.addSubview(playerThumbnailView)
             addSubview(playerView)
-        } else if self.image.hasImageContent, !subviews.contains(imageView) {
+        } else if (self.image.hasImageContent && !self.image.hasVideoContent), !subviews.contains(imageView) {
             if subviews.contains(playerView) { playerView.removeFromSuperview() }
             addSubview(imageView)
             fetchImage()
