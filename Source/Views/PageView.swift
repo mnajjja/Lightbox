@@ -37,7 +37,7 @@ class PageView: UIScrollView {
         
         return thumbnailView
     }()
-  
+
     lazy var loadingIndicator: UIView = LightboxConfig.makeLoadingIndicator()
     
     var image: LightboxImage
@@ -97,7 +97,7 @@ class PageView: UIScrollView {
         
         if !subviews.contains(loadingIndicator) { addSubview(loadingIndicator) }
         loadingIndicator.layer.zPosition = 1
-        
+
         centerMediaViews()
     }
 

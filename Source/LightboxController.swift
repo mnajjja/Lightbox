@@ -1,6 +1,7 @@
 import UIKit
 import SDWebImage
 import AVKit
+import Foundation
 
 public protocol LightboxControllerPageDelegate: AnyObject {
     
@@ -117,6 +118,22 @@ open class LightboxController: UIViewController {
         return view
     }()
     
+    open fileprivate(set) lazy var progressLoadingView: UILabel = {
+        let progress = UILabel()
+        progress.text = ""
+        progress.textAlignment = .center
+        progress.frame.origin = CGPoint(x: 20, y: 105)
+        progress.frame.size.height = 26
+        progress.frame.size.width = progress.intrinsicContentSize.width*1.5
+        progress.textColor = .white
+        progress.backgroundColor = .gray.withAlphaComponent(0.75)
+        progress.clipsToBounds = true
+        progress.layer.cornerRadius = 13
+        progress.isHidden = true
+        
+        return progress
+    }()
+    
     // MARK: - Properties
     
     open fileprivate(set) var currentPage = 0 {
@@ -201,6 +218,18 @@ open class LightboxController: UIViewController {
     open internal(set) var presented = false
     open fileprivate(set) var seen = false
     
+    open var progressLoading: Progress! {
+        didSet{
+            let formatter = ByteCountFormatter()
+            formatter.countStyle = .decimal
+            let completed = formatter.string(fromByteCount: progressLoading.completedUnitCount)
+            let total = formatter.string(fromByteCount: progressLoading.totalUnitCount)
+            progressLoadingView.text = "\(completed) / \(total)"
+            progressLoadingView.frame.size.width = progressLoadingView.intrinsicContentSize.width*1.5
+            progressLoadingView.isHidden = (progressLoading.completedUnitCount / progressLoading.totalUnitCount) == 1
+        }
+    }
+    
     lazy var transitionManager: LightboxTransition = LightboxTransition()
     var pageViews = [PageView]()
     var statusBarHidden = false
@@ -250,7 +279,7 @@ open class LightboxController: UIViewController {
         transitionManager.scrollView = scrollView
         transitioningDelegate = transitionManager
         
-        [scrollView, overlayView, headerView, footerView, messageView].forEach { view.addSubview($0) }
+        [scrollView, overlayView, headerView, footerView, messageView, progressLoadingView].forEach { view.addSubview($0) }
         overlayView.addGestureRecognizer(overlayTapGestureRecognizer)
         
         configurePages(initialImages)
