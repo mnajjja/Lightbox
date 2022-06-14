@@ -346,8 +346,18 @@ open class LightboxController: UIViewController {
     public func updateLightboxVideoUrl(_ oldUrl: URL?, with newUrl: URL?) {
         scrollView.subviews.forEach { subview in
             if (subview as? PageView)?.image.videoURL == oldUrl {
-                (subview as? PageView)?.image = LightboxImage(videoURL: newUrl)
+                (subview as? PageView)?.image.updateVideoUrl(newUrl: newUrl)
                 (subview as? PageView)?.configure()
+            }
+        }
+    }
+    
+    /// Update LightboxImageThumb Url for Video
+    ///
+    public func updateLightboxVideoThumbUrl(_ thumbUrl: URL?, for videoUrl: URL?) {
+        scrollView.subviews.forEach { subview in
+            if (subview as? PageView)?.image.videoURL == videoUrl {
+                (subview as? PageView)?.image.updateVideoThumb(url: thumbUrl)
             }
         }
     }
@@ -598,11 +608,12 @@ open class LightboxController: UIViewController {
                 
                 DispatchQueue.main.async { [weak self]  in
                     if self?.footerView.playerContainerView.isHidden ?? false { self?.showPlayerView() }
-                    if (self?.avPlayer?.rate ?? 0) > 0 { self?.hideVideoThumbnail() }
                     
+                    // Ignore when Playback Slider Touch Began
                     if !(self?.isPlaybackSliderTouchBegan ?? false) {
                         self?.footerView.playbackSlider.value = Float(time.seconds)
                         self?.footerView.upateLeftTimeLabel(time.stringTime)
+                        
                         if let duration = self?.playerItem?.asset.duration {
                             let timeToEnd = (time - duration).stringTime
                             self?.footerView.upateRightTimeLabel(timeToEnd)
@@ -613,14 +624,13 @@ open class LightboxController: UIViewController {
         }
     }
     
-    
-    private func showVideoThumbnail() {
-        pageViews[currentPage].playerThumbnailView.isHidden = false
+    public func showVideoThumbnail() {
+        pageViews[currentPage].playerThumbnailView.alpha = 1.0
         pageViews[currentPage].playerThumbnailView.sd_setImage(with: pageViews[currentPage].image.imageURL)
     }
     
-    private func hideVideoThumbnail() {
-        pageViews[currentPage].playerThumbnailView.isHidden = true
+    public func hideVideoThumbnail() {
+        self.pageViews[self.currentPage].playerThumbnailView.alpha = 0
     }
     
     func killPlayer() {
@@ -630,20 +640,18 @@ open class LightboxController: UIViewController {
     }
     
     func showPlayerView() {
-        UIView.animate(withDuration: 0.1) {  [weak self] in
-            guard let self = self else { return }
-            if self.pageViews[self.currentPage].image.hasVideoContent {
-                self.pageViews[self.currentPage].loadingIndicator.alpha = 0
-                let duration : CMTime = self.playerItem?.asset.duration ?? CMTimeMake(value: 1, timescale: 10)
-                let seconds : Float64 = CMTimeGetSeconds(duration)
-                self.footerView.upatePlaybackSlider(Float(seconds))
-                self.footerView.setPlayButtonSelected(false)
-                self.footerView.upateLeftTimeLabel("00:00")
-                self.footerView.upateRightTimeLabel("00:00")
-                self.footerView.imageContainerView.isHidden = true
-                self.footerView.playerContainerView.isHidden = false
-                self.footerView.setSkipButtonsHidden(seconds <= 15.0)
-            }
+        if pageViews[self.currentPage].image.hasVideoContent {
+            let duration : CMTime = self.playerItem?.asset.duration ?? CMTimeMake(value: 1, timescale: 10)
+            let seconds : Float64 = CMTimeGetSeconds(duration)
+            footerView.upatePlaybackSlider(Float(seconds))
+            footerView.setPlayButtonSelected(false)
+            footerView.upateLeftTimeLabel("00:00")
+            footerView.upateRightTimeLabel("00:00")
+            footerView.imageContainerView.isHidden = true
+            footerView.playerContainerView.isHidden = false
+            footerView.setSkipButtonsHidden(seconds <= 15.0)
+            pageViews[currentPage].loadingIndicator.alpha = 0
+            hideVideoThumbnail()
         }
     }
     

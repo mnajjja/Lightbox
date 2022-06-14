@@ -52,4 +52,12 @@ open class LightboxImage {
             completion?(nil)
         }
     }
+    
+    open func updateVideoThumb(url: URL?) {
+        imageURL = url
+    }
+    
+    open func updateVideoUrl(newUrl: URL?) {
+        videoURL = newUrl
+    }
 }

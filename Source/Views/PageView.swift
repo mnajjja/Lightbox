@@ -66,9 +66,6 @@ class PageView: UIScrollView {
     
     func configure() {
         configureMediaView()
-        
-        addSubview(loadingIndicator)
-        
         delegate = self
         isMultipleTouchEnabled = true
         minimumZoomScale = LightboxConfig.Zoom.minimumScale
@@ -97,6 +94,9 @@ class PageView: UIScrollView {
             addSubview(imageView)
             fetchImage()
         }
+        
+        if !subviews.contains(loadingIndicator) { addSubview(loadingIndicator) }
+        loadingIndicator.layer.zPosition = 1
         
         centerMediaViews()
     }
