@@ -124,8 +124,8 @@ open class LightboxController: UIViewController {
         progress.textAlignment = .center
         progress.frame.origin = CGPoint(x: 20, y: 105)
         progress.frame.size.height = 26
-        progress.frame.size.width = progress.intrinsicContentSize.width*1.5
         progress.textColor = .white
+        progress.font = UIFont.systemFont(ofSize: 12)
         progress.backgroundColor = .gray.withAlphaComponent(0.75)
         progress.clipsToBounds = true
         progress.layer.cornerRadius = 13
@@ -140,6 +140,11 @@ open class LightboxController: UIViewController {
         didSet {
             let isReachedStartIndex = currentPage == -1
             currentPage = min(numberOfPages - 1, max(0, currentPage))
+            
+             if oldValue != currentPage {
+                 progressLoadingView.isHidden = true
+                 progressLoadingView.text?.removeAll()
+            }
             
             if oldValue != currentPage, playerItemUrl != pageViews[currentPage].image.videoURL {
                 // Stop Playing Video for previous page
@@ -225,8 +230,8 @@ open class LightboxController: UIViewController {
             let completed = formatter.string(fromByteCount: progressLoading.completedUnitCount)
             let total = formatter.string(fromByteCount: progressLoading.totalUnitCount)
             progressLoadingView.text = "\(completed) / \(total)"
-            progressLoadingView.frame.size.width = progressLoadingView.intrinsicContentSize.width*1.5
-            progressLoadingView.isHidden = (progressLoading.completedUnitCount / progressLoading.totalUnitCount) == 1
+            progressLoadingView.frame.size.width = progressLoadingView.intrinsicContentSize.width*1.2
+            progressLoadingView.isHidden = (progressLoading.completedUnitCount / progressLoading.totalUnitCount) >= 1
         }
     }
     
