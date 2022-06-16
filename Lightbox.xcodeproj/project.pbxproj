@@ -17,6 +17,7 @@
 		85CB007027B16C6900A47BB3 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 85CB006F27B16C6900A47BB3 /* SDWebImage */; };
 		9AAC1728283FC52B003F0A93 /* CMTime+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAC1727283FC52B003F0A93 /* CMTime+Extension.swift */; };
 		9AAC17332840F0ED003F0A93 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAC17312840DB7E003F0A93 /* MessageView.swift */; };
+		9AB32B35285AF82500970666 /* UIViewController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AB32B34285AF82500970666 /* UIViewController+Extension.swift */; };
 		9ACBD905283E3B3700B4D493 /* PhotoLibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */; };
 		9ACBD907283E883700B4D493 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBD906283E883700B4D493 /* Date+Extensions.swift */; };
 		9AF0B4C8283BCD9D006C32CE /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */; };
@@ -71,6 +72,7 @@
 		44E6A65B2495BFD400543CF0 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		9AAC1727283FC52B003F0A93 /* CMTime+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMTime+Extension.swift"; sourceTree = "<group>"; };
 		9AAC17312840DB7E003F0A93 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
+		9AB32B34285AF82500970666 /* UIViewController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extension.swift"; sourceTree = "<group>"; };
 		9ACBD904283E3B3700B4D493 /* PhotoLibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryManager.swift; sourceTree = "<group>"; };
 		9ACBD906283E883700B4D493 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		9AF0B4C7283BCD9D006C32CE /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 				D2258CC3215CD035005A9A1C /* Color+Extensions.swift */,
 				9ACBD906283E883700B4D493 /* Date+Extensions.swift */,
 				9AAC1727283FC52B003F0A93 /* CMTime+Extension.swift */,
+				9AB32B34285AF82500970666 /* UIViewController+Extension.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -362,6 +365,7 @@
 				D573A2F51C5B5CA4006053DD /* LightboxTransition.swift in Sources */,
 				D2258CC4215CD035005A9A1C /* Color+Extensions.swift in Sources */,
 				166E3BA920333E04006799C1 /* LightboxImageStub.swift in Sources */,
+				9AB32B35285AF82500970666 /* UIViewController+Extension.swift in Sources */,
 				9ACBD905283E3B3700B4D493 /* PhotoLibraryManager.swift in Sources */,
 				D2D71BBC1D54DA77006AB907 /* AssetManager.swift in Sources */,
 			);

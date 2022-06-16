@@ -1,7 +1,8 @@
-import UIKit
-import SDWebImage
 import AVKit
 import Foundation
+import Photos
+import SDWebImage
+import UIKit
 
 public protocol LightboxControllerPageDelegate: AnyObject {
     
@@ -907,6 +908,17 @@ extension LightboxController: FooterViewDelegate {
     
     public func saveButtonDidTap(_ headerView: FooterView, _ saveButton: UIButton) {
         guard images.count > 0 else { return }
+
+        if #available(iOS 14, *) {
+            switch PHPhotoLibrary.authorizationStatus(for: .addOnly) {
+            case .denied, .restricted, .limited:
+                goToSettings()
+                return
+            default:
+                break
+            }
+        }
+        
         
         if let videoUrl = images[currentPage].videoURL {
             
