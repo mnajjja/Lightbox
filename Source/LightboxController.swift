@@ -909,17 +909,6 @@ extension LightboxController: FooterViewDelegate {
     public func saveButtonDidTap(_ headerView: FooterView, _ saveButton: UIButton) {
         guard images.count > 0 else { return }
 
-        if #available(iOS 14, *) {
-            switch PHPhotoLibrary.authorizationStatus(for: .addOnly) {
-            case .denied, .restricted, .limited:
-                goToSettings()
-                return
-            default:
-                break
-            }
-        }
-        
-        
         if let videoUrl = images[currentPage].videoURL {
             
             saveButton.isUserInteractionEnabled = false
@@ -931,7 +920,7 @@ extension LightboxController: FooterViewDelegate {
                     if success {
                         self?.showMessage(text: "Video saved to Photos.")
                     } else {
-                        self?.showMessage(text: "Video not saved. Error: \(error?.localizedDescription ?? "")")
+                        self?.goToSettings()
                     }
                 }
             }
@@ -945,7 +934,7 @@ extension LightboxController: FooterViewDelegate {
                     if success {
                         self?.showMessage(text: "Image saved to Photos.")
                     } else {
-                        self?.showMessage(text: "Image not saved. Error: \(error?.localizedDescription ?? "")")
+                        self?.goToSettings()
                     }
                 }
             }
@@ -959,7 +948,7 @@ extension LightboxController: FooterViewDelegate {
                     if success {
                         self?.showMessage(text: "Image saved to Photos.")
                     } else {
-                        self?.showMessage(text: "Image not saved. Error: \(error?.localizedDescription ?? "")")
+                        self?.goToSettings()
                     }
                 }
             }
