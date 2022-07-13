@@ -276,14 +276,16 @@ open class LightboxController: UIViewController {
         addObservers()
         // 9 July 2020: @3lvis
         // Lightbox hasn't been optimized to be used in presentation styles other than fullscreen.
-        modalPresentationStyle = .fullScreen
         
         statusBarHidden = UIApplication.shared.isStatusBarHidden
-        
         view.backgroundColor = UIColor.black
-        transitionManager.lightboxController = self
-        transitionManager.scrollView = scrollView
-        transitioningDelegate = transitionManager
+        
+        modalPresentationStyle = .fullScreen
+        if presentationController?.presentationStyle == .fullScreen {
+            transitionManager.lightboxController = self
+            transitionManager.scrollView = scrollView
+            transitioningDelegate = transitionManager
+        }
         
         [scrollView, overlayView, headerView, footerView, messageView, progressLoadingView].forEach { view.addSubview($0) }
         overlayView.addGestureRecognizer(overlayTapGestureRecognizer)
