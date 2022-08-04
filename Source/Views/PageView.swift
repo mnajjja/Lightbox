@@ -48,7 +48,7 @@ class PageView: UIScrollView {
     var hasZoomed: Bool {
         return zoomScale != 1.0
     }
-    
+    var didLayoutOverlay = false
     // MARK: - Initializers
     
     init(image: LightboxImage) {
@@ -165,7 +165,10 @@ class PageView: UIScrollView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+        if !didLayoutOverlay {
+            didLayoutOverlay = true
+            image.overlay?.frame = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
+        }
         let center = image.hasVideoContent ? playerView.center : imageView.center
         loadingIndicator.center = center
     }
