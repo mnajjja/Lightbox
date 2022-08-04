@@ -10,7 +10,7 @@ protocol PageViewDelegate: AnyObject {
 }
 
 class PageView: UIScrollView {
-        
+    
     lazy var imageView: SDAnimatedImageView = {
         let imageView = SDAnimatedImageView()
         imageView.contentMode = .scaleAspectFit
@@ -133,6 +133,7 @@ class PageView: UIScrollView {
     // MARK: - Recognizers
     
     @objc func scrollViewDoubleTapped(_ recognizer: UITapGestureRecognizer) {
+        guard image.canZoom else { return }
         var tappedView: UIView!
         
         if self.image.hasVideoContent, subviews.contains(playerView) {
@@ -244,6 +245,7 @@ extension PageView: LayoutConfigurable {
 extension PageView: UIScrollViewDelegate {
 
   func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+      guard image.canZoom else { return nil }
       if self.image.hasVideoContent, subviews.contains(playerView) {
           return playerView
       }

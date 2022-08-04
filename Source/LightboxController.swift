@@ -159,12 +159,15 @@ open class LightboxController: UIViewController {
                     self.footerView.imageContainerView.isHidden = false
                 }
             }
-            
             footerView.updatePage(currentPage + 1, numberOfPages)
             let title = pageViews[currentPage].image.title
             let description = pageViews[currentPage].image.description
             footerView.updateText(title: title, description: description)
-            
+            if headerView.alpha == 1 && pageViews[currentPage].image.canShowBottomOptions {
+                footerView.alpha = 1
+            } else {
+                footerView.alpha = 0
+            }
             if currentPage == numberOfPages - 1 { seen = true }
             
             reconfigurePagesForPreload()
@@ -305,6 +308,7 @@ open class LightboxController: UIViewController {
                 let description = currentView.image.description
                 footerView.updateText(title: title, description: description)
             }
+            footerView.alpha = currentView.image.canShowBottomOptions ? 1 : 0
         }
     }
     
@@ -565,11 +569,15 @@ open class LightboxController: UIViewController {
     
     func toggleControls(pageView: PageView?, visible: Bool, duration: TimeInterval = 0.1, delay: TimeInterval = 0) {
         let alpha: CGFloat = visible ? 1.0 : 0.0
-        
+        if !(pageView?.image.canShowBottomOptions ?? true) {
+            footerView.alpha = 0
+        }
         
         UIView.animate(withDuration: duration, delay: delay, options: [], animations: { [weak self] in
             self?.headerView.alpha = alpha
-            self?.footerView.alpha = alpha
+            if (pageView?.image.canShowBottomOptions ?? true) {
+                self?.footerView.alpha = alpha
+            }
         }, completion: nil)
     }
     

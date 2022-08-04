@@ -9,6 +9,9 @@ open class LightboxImage {
     open fileprivate(set) var imageClosure: (() -> UIImage)?
     open var title: String?
     open var description: String?
+    open var canZoom: Bool = true
+    open var canShowBottomOptions = true
+    open var startVideoMuted = false
     open var overlay: UIView?
 
     var hasVideoContent: Bool {

@@ -31,7 +31,8 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        images[1].canShowBottomOptions = false
+        images[1].canZoom = false
         view.autoresizingMask = [.flexibleTopMargin, .flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
         view.backgroundColor = UIColor.white
         view.addSubview(showButton)
