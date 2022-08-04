@@ -99,6 +99,10 @@ class PageView: UIScrollView {
         loadingIndicator.layer.zPosition = 1
 
         centerMediaViews()
+        if let overlay = image.overlay {
+            addSubview(overlay)
+            overlay.frame = frame
+        }
     }
 
     // MARK: - Update

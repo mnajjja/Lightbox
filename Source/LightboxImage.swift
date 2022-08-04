@@ -9,6 +9,7 @@ open class LightboxImage {
     open fileprivate(set) var imageClosure: (() -> UIImage)?
     open var title: String?
     open var description: String?
+    open var overlay: UIView?
 
     var hasVideoContent: Bool {
         return videoURL != nil
