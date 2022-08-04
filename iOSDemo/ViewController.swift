@@ -7,7 +7,7 @@ class ViewController: UIViewController {
     
     let images = [
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"), imageURL: URL(string: "https://picsum.photos/200/300")),
-        LightboxImage(title: "Bryan Nguyen", description: "yesterday at 18:28", image: UIImage(named: "photo2")!),
+        LightboxImage(title: "Bryan", description: "yesterday at 18:28", image: UIImage(named: "photo2")!),
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4")),
         LightboxImage(videoURL: URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")),
         LightboxImage(title: "Bryan Nguyen", description: "yesterday at 19:08", image: UIImage(named: "photo2")!),
@@ -31,8 +31,9 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        images[1].canShowBottomOptions = false
-        images[1].canZoom = false
+        let v = UIView(frame: .zero)
+        v.backgroundColor = .red
+        images[0].overlay = v
         view.autoresizingMask = [.flexibleTopMargin, .flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
         view.backgroundColor = UIColor.white
         view.addSubview(showButton)

@@ -254,6 +254,11 @@ extension PageView: UIScrollViewDelegate {
   }
 
   func scrollViewDidZoom(_ scrollView: UIScrollView) {
+      if zoomScale == minimumZoomScale {
+          image.overlay?.isHidden = false
+      } else {
+          image.overlay?.isHidden = true
+      }
     centerMediaViews()
     pageViewDelegate?.pageViewDidZoom(self)
   }
