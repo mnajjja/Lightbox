@@ -101,7 +101,7 @@ class PageView: UIScrollView {
         centerMediaViews()
         if let overlay = image.overlay {
             addSubview(overlay)
-            overlay.frame = frame
+            overlay.frame = UIScreen.main.bounds
         }
     }
 
@@ -167,7 +167,7 @@ class PageView: UIScrollView {
         super.layoutSubviews()
         if !didLayoutOverlay {
             didLayoutOverlay = true
-            image.overlay?.frame = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
+            image.overlay?.frame = UIScreen.main.bounds
         }
         let center = image.hasVideoContent ? playerView.center : imageView.center
         loadingIndicator.center = center

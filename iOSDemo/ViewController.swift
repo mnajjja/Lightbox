@@ -34,7 +34,8 @@ class ViewController: UIViewController {
         let v = UIView(frame: .zero)
         v.frame = view.frame
         v.backgroundColor = .red
-        images[1].overlay = v
+        images[2].overlay = v
+      //  images[1].canZoom = false
         view.autoresizingMask = [.flexibleTopMargin, .flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
         view.backgroundColor = UIColor.white
         view.addSubview(showButton)
