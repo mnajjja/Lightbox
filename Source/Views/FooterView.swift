@@ -252,7 +252,7 @@ open class FooterView: UIView {
         super.init(frame: CGRect.zero)
         
         backgroundColor = UIColor.clear
-        _ = addGradientLayer(gradientColors)
+       // _ = addGradientLayer(gradientColors)
         
         [playbackSlider, leftTimeLabel, rightTimeLabel, playButton, goBackButton, goForwardButton, muteButton].forEach { playerContainerView.addSubview($0) }
         [titleLabel, descriptionLabel].forEach { imageContainerView.addSubview($0) }
@@ -423,7 +423,7 @@ extension FooterView: LayoutConfigurable {
 extension FooterView: InfoLabelDelegate {
     
     public func infoLabel(_ infoLabel: InfoLabel, didExpand expanded: Bool) {
-        _ = (expanded || infoLabel.fullText.isEmpty) ? removeGradientLayer() : addGradientLayer(gradientColors)
+     //   _ = (expanded || infoLabel.fullText.isEmpty) ? removeGradientLayer() : addGradientLayer(gradientColors)
         delegate?.footerView(self, didExpand: expanded)
     }
 }
