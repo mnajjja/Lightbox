@@ -351,6 +351,8 @@ open class LightboxController: UIViewController {
     }
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        avPlayer.pause()
+        pageViews[currentPage].playerView.player?.pause()
     }
     
     open override var prefersStatusBarHidden: Bool {
